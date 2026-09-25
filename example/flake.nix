@@ -20,7 +20,7 @@
       }:
       {
         imports = [ inputs.nix-common.flakeModules.default ];
-        username = "example";
+        username = "consumer";
         git = {
           userName = "Independent Consumer";
           userEmail = "consumer@example.invalid";
@@ -54,8 +54,8 @@
               boot.isContainer = true;
               networking.hostName = "fixture";
               system.stateVersion = "24.11";
-              programs.nh.flake = "/home/example/config";
-              home-manager.users.example.my.ai.copilot-cli.enable = true;
+              programs.nh.flake = "/home/consumer/config";
+              home-manager.users.consumer.my.ai.copilot-cli.enable = true;
             }
           ];
         };
@@ -63,13 +63,13 @@
         flake.consumerContract =
           let
             c = config.flake.nixosConfigurations.fixture.config;
-            h = c.home-manager.users.example;
+            h = c.home-manager.users.consumer;
             copilot = lib.findFirst (p: (p.name or "") == "copilot-wrapped") null h.home.packages;
           in
           assert c.environment.variables.CONSUMER_MARKER == "consumer-owned\n";
           assert h.home.sessionVariables.CONSUMER_MARKER == "consumer-owned\n";
-          assert h.home.username == "example";
-          assert h.home.homeDirectory == "/home/example";
+          assert h.home.username == "consumer";
+          assert h.home.homeDirectory == "/home/consumer";
           assert h.home.stateVersion == "24.11";
           assert h.programs.git.settings.user.email == "consumer@example.invalid";
           assert lib.elem "consumer-skill" h.programs.agent-skills.skills.enable;
