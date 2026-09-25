@@ -20,6 +20,7 @@
       home.packages = [
         orca-slicer-x11
         pkgs.freecad-wayland
+        pkgs.openscad
       ];
     };
 }
