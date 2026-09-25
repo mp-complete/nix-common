@@ -14,7 +14,9 @@
       programs.noctalia = {
         enable = true;
         systemd.enable = false;
-        settings = builtins.toFile "noctalia-config.toml" settings;
+        # Noctalia treats strings as raw TOML. builtins.toFile returns a string,
+        # so passing its store path would write that path as the config contents.
+        inherit settings;
       };
     };
 }
