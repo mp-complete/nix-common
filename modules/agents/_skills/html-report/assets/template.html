@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__TITLE__</title>
+  <meta name="generator" content="html-report skill">
+  <meta name="generated-at" content="__GENERATED_AT__">
+  <style>__CSS__</style>
+  <!-- highlight.js: inlined for offline portability -->
+  <style id="hljs-light">__HLJS_LIGHT_CSS__</style>
+  <style id="hljs-dark" disabled>__HLJS_DARK_CSS__</style>
+  <script>__HLJS_JS__</script>
+  <script>__HLJS_LANGS_JS__</script>
+  __HEAD_EXTRAS__
+</head>
+<body>
+  <header class="page-head">
+    <div class="page-head-row">
+      <div class="eyebrow"><span class="badge">__BADGE__</span> · <span class="meta-mono">__SLUG__</span> · <time datetime="__GENERATED_AT__">__GENERATED_AT_HUMAN__</time></div>
+      <div class="page-head-controls">
+        <button id="theme-toggle" class="btn-ghost" aria-label="Toggle dark mode" title="Toggle dark mode">◐</button>
+        <a href="#appendix-metadata" class="btn-ghost" title="Run metadata">i</a>
+      </div>
+    </div>
+    <h1>__TITLE__</h1>
+    <p class="lede">__LEDE__</p>
+  </header>
+
+  <nav class="toc" aria-label="Table of contents">
+    __TOC__
+  </nav>
+
+  <main>
+    <section id="executive-summary" class="exec">
+      <h2>Executive summary</h2>
+      <dl class="exec-grid">
+        <dt>Question</dt>
+        <dd>__EXEC_QUESTION__</dd>
+        <dt>Context</dt>
+        <dd>__EXEC_CONTEXT__</dd>
+        <dt>Findings</dt>
+        <dd><ol class="exec-findings">__EXEC_FINDINGS__</ol></dd>
+        <dt>Confidence</dt>
+        <dd><span class="confidence confidence-__EXEC_CONFIDENCE_LEVEL__">__EXEC_CONFIDENCE_LEVEL__</span> &mdash; __EXEC_CONFIDENCE_REASON__</dd>
+      </dl>
+    </section>
+
+    __OPTIONAL_RECOMMENDATIONS__
+    __OPTIONAL_OPEN_QUESTIONS__
+    __OPTIONAL_OUT_OF_SCOPE__
+
+    __BODY__
+
+    <section id="appendix-metadata" class="appendix">
+      <h2>Appendix: Run metadata</h2>
+      <dl class="kv">
+        <dt>Model</dt>           <dd class="mono">__META_MODEL__</dd>
+        <dt>Agent</dt>           <dd class="mono">__META_AGENT__</dd>
+        <dt>Host</dt>            <dd class="mono">__META_HOST__</dd>
+        <dt>Generated</dt>       <dd class="mono"><time datetime="__GENERATED_AT__">__GENERATED_AT__</time></dd>
+        <dt>Working dir</dt>     <dd class="mono">__META_CWD__</dd>
+        <dt>Skill version</dt>   <dd class="mono">__META_SKILL_VERSION__</dd>
+      </dl>
+
+      <h3>Prompt</h3>
+      <details open><summary>Verbatim user prompt</summary>
+        <pre class="prompt-block">__META_PROMPT__</pre>
+      </details>
+
+      <h3>Tools used</h3>
+      <div class="tools-wrap">__META_TOOLS_TABLE__</div>
+
+      <h3>Sources</h3>
+      <ol class="sources-list">__META_SOURCES__</ol>
+    </section>
+  </main>
+
+  <footer>
+    <span class="mono">__SLUG__ · generated __GENERATED_AT__ · skill html-report __META_SKILL_VERSION__</span>
+  </footer>
+
+  <script>
+    // Theme handling: light/dark/auto with persistence and hljs swap.
+    (function () {
+      var html = document.documentElement;
+      var stored = localStorage.getItem('hr-theme');
+      var initial = stored || 'auto';
+      applyTheme(initial);
+
+      function effective(t) {
+        if (t !== 'auto') return t;
+        return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      function applyTheme(t) {
+        html.dataset.theme = t;
+        var eff = effective(t);
+        var lightCss = document.getElementById('hljs-light');
+        var darkCss  = document.getElementById('hljs-dark');
+        if (lightCss && darkCss) {
+          lightCss.disabled = (eff === 'dark');
+          darkCss.disabled  = (eff === 'light');
+        }
+      }
+      var btn = document.getElementById('theme-toggle');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          var current = html.dataset.theme || 'auto';
+          var next = current === 'auto' ? 'light'
+                   : current === 'light' ? 'dark' : 'auto';
+          localStorage.setItem('hr-theme', next);
+          applyTheme(next);
+        });
+      }
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+        if ((html.dataset.theme || 'auto') === 'auto') applyTheme('auto');
+      });
+    })();
+
+    // Syntax highlight any code blocks the report author marked with a class.
+    if (window.hljs) { hljs.highlightAll(); }
+
+    // Footnote-style provenance: clicking a ref jumps and briefly highlights target.
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if (el) {
+        el.classList.add('hr-flash');
+        setTimeout(function () { el.classList.remove('hr-flash'); }, 1400);
+      }
+    });
+  </script>
+
+  __BODY_EXTRAS__
+</body>
+</html>

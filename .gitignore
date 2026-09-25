@@ -1,0 +1,5 @@
+home/modules/nvim/nvim/lazy-lock.json
+home/modules/nvim/nvim/lazyvim.json
+/result*
+/.direnv/
+/example/flake.lock

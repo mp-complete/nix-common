@@ -1,0 +1,187 @@
+{
+  "title": "Lock contention in OrderService write path",
+  "slug": "order-write-lock-investigation",
+  "lede": "Investigation into the p99 OrderService write spike that started at 14:02 UTC on 2026-06-15.",
+  "badge": "investigation",
+
+  "summary": {
+    "question": "Why are p99 OrderService writes spiking after 14:00 UTC on 2026-06-15?",
+    "context": "Investigated traces, code, and recent deploys in the services/order repo on 2026-06-15. Pulled trace bundles for the 14:00 to 15:30 UTC window, read relevant source, and reviewed the last seven days of merged PRs.",
+    "findings": [
+      { "text": "A new pessimistic lock was introduced in PR #4421 and merged 2026-06-10.", "refs": ["src-pr-4421"] },
+      { "text": "The lock window in <code>Write()</code> encloses a 200ms external call to PricingService.", "refs": ["src-file-orderwrite", "src-trace-1402"] },
+      { "text": "Traffic doubled at 14:02 UTC due to a flash promo, exposing the contention.", "refs": ["src-grafana-rps"] },
+      { "text": "p99 returns to normal when the external call is moved outside the lock (reproduced locally).", "refs": ["src-repro-bench"] }
+    ],
+    "confidence": {
+      "level": "high",
+      "reason": "Reproduced locally with a synthetic load matching production traffic shape."
+    }
+  },
+
+  "recommendations": [
+    { "text": "Move the PricingService call outside the lock; see proposed diff.", "refs": ["src-file-orderwrite"] },
+    { "text": "Add a perf regression test in CI that fails if Write() p99 > 200ms under 2x load." }
+  ],
+
+  "openQuestions": [
+    { "text": "Should we cap the lock duration with a context timeout? Would shed load earlier but might break the consistency contract.", "refs": ["src-file-orderwrite"] },
+    "What does PricingService p99 look like under multi-region failover? Not exercised in today's traffic."
+  ],
+
+  "outOfScope": [
+    "Read-path latency (separate code path, no contention)",
+    "PricingService internals (treated as a black box; team owns it)"
+  ],
+
+  "sections": [
+    {
+      "heading": "Symptom",
+      "blocks": [
+        { "type": "p", "text": "p99 write latency began rising at 14:02 UTC, correlated with traffic, not a deploy. The most recent deploy of <code>order</code> was at 12:14 UTC and had been quiet for 1h48m before the spike." },
+        { "type": "chart",
+          "id": "fig-latency",
+          "caption": "p99 write latency vs RPS, 13:30 to 15:30 UTC",
+          "spec": {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": { "values": [
+              {"t": 0,  "p99": 120, "rps": 60},
+              {"t": 5,  "p99": 130, "rps": 62},
+              {"t": 10, "p99": 142, "rps": 64},
+              {"t": 15, "p99": 138, "rps": 65},
+              {"t": 20, "p99": 145, "rps": 66},
+              {"t": 25, "p99": 158, "rps": 70},
+              {"t": 30, "p99": 480, "rps": 110},
+              {"t": 35, "p99": 720, "rps": 122},
+              {"t": 40, "p99": 812, "rps": 130},
+              {"t": 45, "p99": 690, "rps": 128},
+              {"t": 50, "p99": 612, "rps": 119}
+            ]},
+            "transform": [ { "fold": ["p99", "rps"], "as": ["metric", "value"] } ],
+            "mark": { "type": "line", "point": true },
+            "encoding": {
+              "x":     { "field": "t",     "type": "quantitative", "title": "minutes after 13:30 UTC" },
+              "y":     { "field": "value", "type": "quantitative" },
+              "color": { "field": "metric", "type": "nominal",
+                         "scale": { "range": ["#1F6FEB", "#CF222E"] } }
+            },
+            "width": "container", "height": 220,
+            "config": { "background": null, "view": { "stroke": null } }
+          }
+        }
+      ]
+    },
+
+    {
+      "heading": "Root cause",
+      "blocks": [
+        { "type": "p", "text": "PR #4421 introduced a pessimistic lock around the entire <code>Write()</code> body to fix a separate race. The lock now encloses a synchronous call to <code>pricing.GetQuote(ctx)</code>, which has a steady-state p50 of 80ms and p99 of 200ms." },
+        { "type": "code",
+          "lang": "go",
+          "caption": "Lock acquisition site (current state)",
+          "path": "services/order/src/write.go:142",
+          "code": "func (s *Service) Write(ctx context.Context, o Order) error {\n    s.mu.Lock()\n    defer s.mu.Unlock()\n    quote, err := s.pricing.GetQuote(ctx, o.SKU) // <-- 200ms p99\n    if err != nil {\n        return err\n    }\n    return s.persist(ctx, o, quote)\n}"
+        },
+        { "type": "details",
+          "id": "drill-trace-1402",
+          "summary": "Trace excerpt: span 9f8a1bc2 (peak)",
+          "where": "trace-id 9f8a1bc2",
+          "lang": "json",
+          "code": "{\n  \"trace_id\": \"9f8a1bc2\",\n  \"spans\": [\n    { \"name\": \"order.write.lock_acquire\", \"dur_ms\": 612 },\n    { \"name\": \"pricing.GetQuote\",       \"dur_ms\": 198 },\n    { \"name\": \"order.persist\",          \"dur_ms\": 14 }\n  ]\n}"
+        }
+      ]
+    },
+
+    {
+      "heading": "Proposed fix",
+      "blocks": [
+        { "type": "p", "text": "Move the external call outside the lock. The lock only needs to guard <code>persist()</code>, which is the operation with the race condition that PR #4421 was originally fixing." },
+        { "type": "diff",
+          "lines": [
+            "@@ -142,5 +142,6 @@",
+            " func (s *Service) Write(ctx context.Context, o Order) error {",
+            "-    s.mu.Lock()",
+            "-    defer s.mu.Unlock()",
+            "-    quote, err := s.pricing.GetQuote(ctx, o.SKU)",
+            "+    quote, err := s.pricing.GetQuote(ctx, o.SKU)",
+            "     if err != nil {",
+            "         return err",
+            "     }",
+            "+    s.mu.Lock()",
+            "+    defer s.mu.Unlock()",
+            "     return s.persist(ctx, o, quote)",
+            " }"
+          ]
+        },
+        { "type": "p", "text": "Re-running the synthetic load with this change brings p99 back to 158ms at the same 2x RPS." }
+      ]
+    },
+
+    {
+      "heading": "Reproduction",
+      "blocks": [
+        { "type": "kv",
+          "items": [
+            { "k": "Benchmark",  "v": "scripts/bench/write-2x.sh", "mono": true },
+            { "k": "Concurrency", "v": "128", "mono": true },
+            { "k": "Duration",   "v": "5 min", "mono": true }
+          ]
+        },
+        { "type": "table",
+          "sortable": true,
+          "caption": "Synthetic load p99 (5 runs each, ms)",
+          "headers": [
+            "branch",
+            { "text": "p50", "align": "right" },
+            { "text": "p99", "align": "right" },
+            { "text": "max", "align": "right" }
+          ],
+          "rows": [
+            ["main (current)",   78, 812, 1421],
+            ["proposed fix",     74, 158,  302]
+          ]
+        }
+      ]
+    }
+  ],
+
+  "meta": {
+    "model": "claude-sonnet-4.7",
+    "agent": "crush",
+    "host":  "euler",
+    "prompt": "Investigate why p99 OrderService writes are spiking after 14:00 UTC on 2026-06-15. Write it up as an html report.",
+    "generatedAt": "2026-06-15T15:31:00Z",
+    "tools": [
+      { "name": "grep",  "calls": 14, "summary": "ripgrep across services/order" },
+      { "name": "view",  "calls":  9, "summary": "read source files in write path" },
+      { "name": "bash",  "calls":  6, "summary": "ran perf scripts" },
+      { "name": "fetch", "calls":  2, "summary": "GitHub API for PR #4421" }
+    ],
+    "sources": [
+      { "id": "src-pr-4421",
+        "kind": "pr",
+        "url":  "https://github.com/example/order/pull/4421",
+        "title": "PR #4421 — add pessimistic lock for OrderWrite",
+        "note": "merged 2026-06-10 by alice" },
+      { "id": "src-file-orderwrite",
+        "kind": "file",
+        "path": "services/order/src/write.go",
+        "line": 142,
+        "note": "Write(ctx) method, lock acquisition site" },
+      { "id": "src-trace-1402",
+        "kind": "url",
+        "url":  "https://traces.example.com/?t=9f8a1bc2",
+        "title": "Trace 9f8a1bc2 (peak window 14:02 UTC)",
+        "accessed": "2026-06-15" },
+      { "id": "src-grafana-rps",
+        "kind": "url",
+        "url":  "https://grafana.example.com/d/order/write?from=now-2h",
+        "title": "Order Write — Grafana dashboard",
+        "accessed": "2026-06-15" },
+      { "id": "src-repro-bench",
+        "kind": "file",
+        "path": "scripts/bench/write-2x.sh",
+        "note": "synthetic 2x-RPS reproduction harness" }
+    ]
+  }
+}
