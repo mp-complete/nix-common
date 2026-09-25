@@ -6,7 +6,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: check-${{ github.ref }}
+  # Treat a branch push and its pull-request run as the same validation lane.
+  group: check-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   validate:
