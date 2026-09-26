@@ -45,6 +45,7 @@
         flake.nixosConfigurations.fixture = mkHost {
           buckets = [
             "base"
+            "sway"
             "dev"
             "ai"
             "skills"
@@ -77,6 +78,8 @@
           assert h.sops.secrets == { };
           assert h.sops.templates == { };
           assert copilot != null;
+          assert c.programs.sway.enable;
+          assert c.services.greetd.enable;
           {
             passed = true;
             copilotDerivation = copilot.drvPath;
