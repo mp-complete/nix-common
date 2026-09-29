@@ -1,11 +1,14 @@
 name: Check reusable flake
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - '**/*.md'
   pull_request:
     paths-ignore:
       - '**/*.md'
+      - '.github/workflows/**'
   workflow_dispatch:
 permissions:
   contents: read
