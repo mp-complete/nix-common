@@ -4,6 +4,12 @@ from pathlib import Path
 import subprocess
 
 root = Path(__file__).resolve().parent.parent
+# These skills are consumer-owned. Do not reintroduce bundled copies or a
+# dependency on the private collection merely to validate this boundary.
+for skill in ("ado-pr-markdown", "browser-control", "figma-to-spec", "fluent-ui-v9"):
+    path = root / "modules/agents/_skills" / skill
+    assert not (path.exists() or path.is_symlink()), f"Consumer-owned skill bundled: {skill}"
+
 paths = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")
 for relative in filter(None, paths):
     path = root / relative
@@ -11,7 +17,8 @@ for relative in filter(None, paths):
     assert path.name != ".sops.yaml" and ".enc." not in path.name, relative
     assert "warehouse-ux-pr-review/" not in relative, relative
     assert not relative.startswith("overlays/agent-mcps/"), relative
-    if path.suffix in {".nix", ".yaml", ".json", ".toml", ".lua", ".sh", ".md"}:
+    # Validate the working tree too, including unstaged tracked deletions.
+    if path.exists() and path.suffix in {".nix", ".yaml", ".json", ".toml", ".lua", ".sh", ".md"}:
         text = path.read_text()
         for forbidden in ("ENC[AES256_GCM,", "icm-mcp-prod.azure-api.net", "72f988bf-86f1-41af-91ab-2d7cd011db47"):
             assert forbidden not in text, f"{relative}: forbidden environment material"

@@ -86,10 +86,17 @@ travels with `index.html`:
 }
 ```
 
-For corp-internal or AAD-protected pages, capture screenshots with the
-[`browser-control`](../../browser-control/SKILL.md) skill:
+For authenticated pages, use an authorized browser tool or a separately
+installed `browser-control` skill. The skill is not bundled with `html-report`.
+If it is installed, read `$AGENTS_SKILLS_DIR/browser-control/SKILL.md` first;
+do not assume a sibling source directory exists. If no suitable browser tool or
+skill is available, ask the user for a screenshot rather than installing or
+configuring authentication implicitly.
+
+For the optional installed skill:
 
 ```bash
+test -r "$AGENTS_SKILLS_DIR/browser-control/SKILL.md" || exit 1
 CDP_URL=$(bash "$AGENTS_SKILLS_DIR/browser-control/scripts/bootstrap.sh" | tail -n1)
 python3 "$AGENTS_SKILLS_DIR/browser-control/scripts/capture_page.py" \
   --match "grafana.example.com" \

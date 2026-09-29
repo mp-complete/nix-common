@@ -6,7 +6,6 @@
       builtinSkills = [
         "writing-skills"
         "html-report"
-        "ado-pr-markdown"
         "context-reflect"
       ];
       mattPocockSkills = [
@@ -19,10 +18,6 @@
         "engineering/wayfinder"
         "productivity/grill-me"
         "productivity/grilling"
-      ];
-      availableSkills = [
-        "figma-to-spec"
-        "fluent-ui-v9"
       ];
     in
     {
@@ -40,9 +35,9 @@
           description = "Additional consumer-owned names accepted by skills.extra.";
         };
         extra = lib.mkOption {
-          type = lib.types.listOf (lib.types.enum (availableSkills ++ config.skills.availableExtra));
+          type = lib.types.listOf (lib.types.enum config.skills.availableExtra);
           default = [ ];
-          description = "Optional skills enabled from the shared or consumer registry.";
+          description = "Optional skills enabled from the consumer registry.";
         };
       };
 
