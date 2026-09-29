@@ -65,6 +65,16 @@
             c = config.flake.nixosConfigurations.fixture.config;
             h = c.home-manager.users.consumer;
             copilot = lib.findFirst (p: (p.name or "") == "copilot-wrapped") null h.home.packages;
+            skills = h.programs.agent-skills;
+            commonSkillNames = builtins.attrNames (
+              lib.filterAttrs (_: skill: skill.source == "nix-common") skills.catalog
+            );
+            consumerOwnedSkills = [
+              "ado-pr-markdown"
+              "browser-control"
+              "figma-to-spec"
+              "fluent-ui-v9"
+            ];
           in
           assert c.environment.variables.CONSUMER_MARKER == "consumer-owned\n";
           assert h.home.sessionVariables.CONSUMER_MARKER == "consumer-owned\n";
@@ -72,8 +82,18 @@
           assert h.home.homeDirectory == "/home/consumer";
           assert h.home.stateVersion == "24.11";
           assert h.programs.git.settings.user.email == "consumer@example.invalid";
-          assert lib.elem "consumer-skill" h.programs.agent-skills.skills.enable;
-          assert !lib.elem "warehouse-ux-pr-review" h.programs.agent-skills.skills.enable;
+          assert lib.elem "consumer-skill" skills.skills.enable;
+          assert
+            commonSkillNames == [
+              "context-reflect"
+              "html-report"
+              "writing-skills"
+            ];
+          assert lib.all (name: lib.elem name skills.skills.enable) commonSkillNames;
+          assert lib.all (
+            name: !(builtins.hasAttr name skills.catalog) && !(lib.elem name skills.skills.enable)
+          ) consumerOwnedSkills;
+          assert !lib.elem "warehouse-ux-pr-review" skills.skills.enable;
           assert h.sops.secrets == { };
           assert h.sops.templates == { };
           assert copilot != null;
