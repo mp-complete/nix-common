@@ -1,5 +1,8 @@
 # nix-common
 
+[![Check reusable flake](https://github.com/mp-complete/nix-common/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/mp-complete/nix-common/actions/workflows/check.yml)
+[![Update flake lock](https://github.com/mp-complete/nix-common/actions/workflows/update-flake-lock.yml/badge.svg?branch=main)](https://github.com/mp-complete/nix-common/actions/workflows/update-flake-lock.yml)
+
 An opinionated, reusable **dendritic flake-parts configuration library**: NixOS/Home Manager feature buckets, explicit package wrappers, editor/tool configurations, and extensible agent tooling.
 
 Extracted from `mp-complete/nixdots` at `75a7ef92dc874c0812f08beaf4eb619bc164ecba`, with fresh history and the same upstream dependency pins. Personal machines and credentials live in a separate consumer; work configuration can live under a different owner without either repository depending on it.
