@@ -2,9 +2,7 @@
 with pkgs.vimPlugins;
 let
   treesitter = nvim-treesitter.withPlugins (
-    plugins:
-    with plugins;
-    [
+    plugins: with plugins; [
       nix
       lua
       fennel
