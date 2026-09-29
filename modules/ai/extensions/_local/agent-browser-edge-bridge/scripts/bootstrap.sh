@@ -21,7 +21,7 @@ die() { log "ERROR: $*"; exit 1; }
 
 grep -qi microsoft /proc/version 2>/dev/null \
   || die "WSL detection failed; this bridge only runs inside WSL2."
-for command in powershell.exe cmd.exe wslpath curl jq sha256sum; do
+for command in powershell.exe cmd.exe wslpath curl jq sha256sum cmp mktemp cp chmod ln rm; do
   command -v "$command" >/dev/null 2>&1 || die "$command is required but not on PATH."
 done
 
@@ -55,8 +55,47 @@ CONTROLLER_HASH="$(sha256sum "$CONTROLLER_SRC" | cut -c1-16)"
 FORWARDER_HASH="$(sha256sum "$FORWARDER_SRC" | cut -c1-16)"
 CONTROLLER_WSL="$WIN_TEMP_WSL/pi_agent_browser_edge_bridge-$CONTROLLER_HASH.ps1"
 FORWARDER_WSL="$WIN_TEMP_WSL/pi_agent_browser_edge_forwarder-$FORWARDER_HASH.ps1"
-cp "$CONTROLLER_SRC" "$CONTROLLER_WSL"
-cp "$FORWARDER_SRC" "$FORWARDER_WSL"
+# Nix sources are read-only. Never overwrite an existing cached script: an
+# earlier cp may have inherited mode 0444, and another bootstrap may be using it.
+# Publish a complete file without clobbering a concurrent winner. This protects
+# against accidental races, not a malicious process running as the same user.
+stage_script() (
+  local source="$1" destination="$2" staged=""
+  trap '[[ -z "$staged" ]] || rm -f -- "$staged"' EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+
+  verify_script() {
+    [[ ! -L "$destination" && -f "$destination" && -O "$destination" ]] \
+      && cmp -s -- "$source" "$destination"
+  }
+
+  if [[ -e "$destination" || -L "$destination" ]]; then
+    verify_script \
+      || die "Windows TEMP staging: refusing unexpected cached script: $destination (expected an owned regular file matching this bridge). Inspect it before removing it."
+    return
+  fi
+
+  staged="$(mktemp "$WIN_TEMP_WSL/.pi-edge-stage.XXXXXXXX.ps1")" \
+    || die "Windows TEMP staging: cannot create a temporary file in $WIN_TEMP_WSL; check mount permissions and Windows ACLs."
+  # mktemp creates mode 0600; copying into that file does not inherit store modes.
+  cp -- "$source" "$staged" \
+    || die "Windows TEMP staging: failed to copy $source into $WIN_TEMP_WSL."
+  chmod 600 "$staged" \
+    || die "Windows TEMP staging: cannot set script permissions in $WIN_TEMP_WSL."
+  # A hard link atomically publishes the complete inode and fails if the name
+  # exists. Avoid the transient missing destinations observed with concurrent
+  # mv -n on DrvFS; do not fall back to copying into the final path.
+  # The EXIT trap removes only our staging name, leaving the published file.
+  if ! ln -T -- "$staged" "$destination" 2>/dev/null; then
+    verify_script \
+      || die "Windows TEMP staging: cannot publish $destination (requires hard-link support and write access), or a competing cached file is unexpected."
+  fi
+  verify_script \
+    || die "Windows TEMP staging: published or concurrently created script is unexpected: $destination."
+)
+stage_script "$CONTROLLER_SRC" "$CONTROLLER_WSL"
+stage_script "$FORWARDER_SRC" "$FORWARDER_WSL"
 CONTROLLER_WIN="$(wslpath -w "$CONTROLLER_WSL")"
 FORWARDER_WIN="$(wslpath -w "$FORWARDER_WSL")"
 

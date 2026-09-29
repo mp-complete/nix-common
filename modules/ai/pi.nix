@@ -170,7 +170,13 @@ in
   # Two first-class wrappers (auto-exposed as `.#pi-desktop` / `.#pi-wsl`,
   # built by `nix flake check`).
   flake.wrappers.pi-desktop = mkPi desktopExtensions;
-  flake.wrappers.pi-wsl = mkPi wslExtensions;
+  flake.wrappers.pi-wsl =
+    { pkgs, ... }:
+    {
+      imports = [ (mkPi wslExtensions) ];
+      # The bridge verifies cached PowerShell script bytes with cmp.
+      runtimePkgs = [ pkgs.diffutils ];
+    };
 
   # Headless wrapper consumed by the `pi-agent` bucket (`nix build .#pi-daemon`).
   flake.wrappers.pi-daemon = mkPi daemonExtensions;

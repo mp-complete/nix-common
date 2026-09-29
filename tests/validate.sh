@@ -12,5 +12,6 @@ node --test modules/ai/extensions/_local/pi-scan-guard/test/*.test.mjs \
   modules/ai/extensions/_local/agent-browser-edge-bridge/test/*.test.mjs
 if [[ ${1:-} == --build ]]; then
   nix build ./example#checks.x86_64-linux.consumer-wrapper "${consumer_args[@]}" --no-link
-  nix build .#checks.x86_64-linux.pi-agent-eval --no-link --no-write-lock-file
+  nix build .#checks.x86_64-linux.pi-agent-eval \
+    .#checks.x86_64-linux.edge-cdp-bootstrap --no-link --no-write-lock-file
 fi
