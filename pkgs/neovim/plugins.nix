@@ -1,18 +1,6 @@
 { pkgs }:
 with pkgs.vimPlugins;
 let
-  treesitter-kulala-http-grammar = pkgs.tree-sitter.buildGrammar {
-    language = "kulala_http";
-    version = "6.9.2";
-    src = pkgs.fetchFromGitHub {
-      owner = "mistweaverco";
-      repo = "kulala.nvim";
-      rev = "69250f64e60f75c010feac413576acbd9ffa4ec8";
-      hash = "sha256-9w/WvEHodFDqP6S+6YZxunYZu40lI/xvWngo7sGeBUI=";
-    };
-    location = "lua/tree-sitter";
-  };
-
   treesitter = nvim-treesitter.withPlugins (
     plugins:
     with plugins;
@@ -30,9 +18,6 @@ let
       json
       yaml
       python
-    ]
-    ++ [
-      treesitter-kulala-http-grammar
     ]
   );
 in
@@ -80,7 +65,6 @@ in
     gitsigns-nvim
     grug-far-nvim
     indent-blankline-nvim
-    kulala-nvim
     lualine-nvim
     mini-nvim
     neo-tree-nvim
