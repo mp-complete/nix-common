@@ -1,6 +1,5 @@
 [{:name :flash.nvim}
  {:import :plugins.utils.which-key}
- {:import :plugins.utils.kulala}
  {:import :plugins.utils.smart-splits}
  {:name :conjure
   :ft [:clojure :fennel]}
