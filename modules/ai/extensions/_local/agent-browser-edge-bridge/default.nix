@@ -19,7 +19,7 @@
 # manifest in `package.json` to learn which TS file to load.
 let
   pname = "agent-browser-edge-bridge";
-  version = "0.3.0";
+  version = "0.3.1";
 
   # Filter the source so default.nix and editor cruft don't end up in
   # the store output. Keeps the derivation hash stable when only

@@ -67,6 +67,29 @@ forwarder listeners must have the expected executable, command line, profile,
 ports, and bind address; otherwise bootstrap reports a layer-specific collision.
 Every Pi runtime re-runs these ownership checks instead of trusting a cached URL.
 
+### Repeatable script staging
+
+Before invoking PowerShell, bootstrap stages the controller and forwarder under
+content-derived names in Windows TEMP. Existing files are reused only when they
+are owned by the WSL user, regular files (not symlinks), and byte-identical to the
+packaged sources. This supports old read-only cached copies without rewriting
+or chmodding them: Nix-store sources are mode `0444`, which plain `cp` propagates
+to a newly created destination and cannot overwrite on the next run.
+
+New scripts are copied into private mode-`0600` temporary files, then published
+with exclusive hard-link creation. A concurrent bootstrap can only reuse a
+verified winner. `mv -n` is deliberately not used: concurrent publication showed
+transient missing destinations on DrvFS. The Windows TEMP filesystem must
+support hard links and meaningful ownership metadata; the tested WSL mount uses
+DrvFS metadata. There is no fallback to copying into the final path.
+
+Unexpected paths, contents, or staging failures stop before PowerShell with a
+`Windows TEMP staging` diagnostic. Inspect the named path and permissions rather
+than blindly deleting caches or changing Windows policy. Ordinary failures clean
+up the caller's staging file; SIGKILL/power loss can leave a `.pi-edge-stage.*.ps1`
+name, possibly another link to a published script. This is not protection against
+malicious same-user mutation, nor a lease on the browser itself.
+
 ### Optional environment overrides
 
 - `WSL_BROWSER_DEBUG_PORT` (default `9222`)
@@ -100,17 +123,29 @@ overrides.
 
 ## Validation
 
+From this extension directory, `npm test` runs the local suite. From the
+nix-common root, run the packaged check and wrapper build:
+
 ```bash
-npm test
+nix build --no-link .#checks.x86_64-linux.edge-cdp-bootstrap .#pi-wsl
 ```
 
+The packaged check runs Bash syntax validation, ShellCheck (excluding SC2015 for
+the existing intentional port guards), and all non-live tests. The eleven
+bootstrap regressions execute the actual shell script with Windows commands and
+CDP stubbed, including read-only cached scripts, 32 concurrent starts, rejected
+unexpected paths, partial-copy cleanup, and missing hard-link support. They run
+on Linux without Windows, a browser, credentials, or an agent process. To test
+DrvFS behavior, set `TMPDIR` to a writable mounted Windows temp directory and run
+`node --test test/bootstrap.test.mjs`; fixtures clean up after themselves.
+
 The startup integration test is skipped unless `PI_TEST_BINARY` points to an
-unwrapped Pi executable. To exercise the actual Bun/jiti loader, run from the
-nixdots repository root after building `.#pi-wsl`:
+unwrapped Pi executable. For an explicitly requested manual loader check, from
+the nix-common root:
 
 ```bash
-PI_TEST_BINARY="$(nix eval --raw .#nixosConfigurations.hilbert.pkgs.pi-coding-agent.outPath)/bin/pi" \
-  node --test modules/ai/extensions/_local/agent-browser-edge-bridge/test/*.test.mjs
+PI_TEST_BINARY=/absolute/path/to/unwrapped/pi \
+  node --test modules/ai/extensions/_local/agent-browser-edge-bridge/test/startup.test.mjs
 ```
 
 This launches Pi in an isolated directory without credentials or model calls
