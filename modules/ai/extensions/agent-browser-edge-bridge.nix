@@ -6,7 +6,7 @@
   # flake-parts module); built via callPackage.
   pi.extensions.agent-browser-edge-bridge = {
     pname = "agent-browser-edge-bridge";
-    version = "0.3.1";
+    version = "0.3.2";
     # No npm tarball: leave hash empty and build from the local source.
     build = { pkgs, ... }: pkgs.callPackage ./_local/agent-browser-edge-bridge { };
   };
