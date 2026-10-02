@@ -35,14 +35,26 @@ jobs:
           nix fmt -- --fail-on-change
           bash tests/validate.sh --build
       - name: Open or refresh update pull request
+        id: cpr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: automation/flake-lock-update
           delete-branch: true
+          add-paths: flake.lock
           commit-message: "flake.lock: update inputs"
           title: "flake.lock: update inputs"
           body: |
             Automated nightly update of all flake inputs.
 
-            The updated lock file passed formatting, flake evaluation, extension tests, and smoke builds before this pull request was created.
+            The updated lock file passed formatting, flake evaluation, extension tests, and smoke builds before this pull request was created, so it is merged automatically.
+      # Pull requests opened with GITHUB_TOKEN do not trigger other workflows, so
+      # the validation above is the gate. Only a validated head commit is merged.
+      - name: Merge validated update pull request
+        if: steps.cpr.outputs.pull-request-number != '' && steps.cpr.outputs.pull-request-operation != 'closed'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          PR_HEAD_SHA: ${{ steps.cpr.outputs.pull-request-head-sha }}
+        run: gh pr merge "$PR_NUMBER" --merge --delete-branch --match-head-commit "$PR_HEAD_SHA"
