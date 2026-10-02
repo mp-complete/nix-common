@@ -35,6 +35,13 @@ test("the verified Edge debug listener must stay on loopback", () => {
   assert.match(controller, /Get-EdgeCdpIdentity/);
 });
 
+test("legacy unquoted profile paths require one exact expected token", () => {
+  assert.match(controller, /\[regex\]::Escape\("--user-data-dir=\$ExpectedProfile"\)/);
+  assert.match(controller, /\$legacyMatches\.Count -eq 1/);
+  assert.match(controller, /--no-first-run\|--no-default-browser-check/);
+  assert.doesNotMatch(controller, /-join.*profile/i);
+});
+
 test("bootstrap prefers mirrored localhost before NAT", () => {
   const directProbe = bootstrap.indexOf('DIRECT_URL="http://127.0.0.1:');
   const gatewayLookup = bootstrap.indexOf("ip route show default");

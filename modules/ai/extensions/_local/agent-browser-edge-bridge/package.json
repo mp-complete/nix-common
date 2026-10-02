@@ -1,6 +1,6 @@
 {
   "name": "agent-browser-edge-bridge",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "type": "module",
   "description": "Pi extension that routes pi-chrome-use exclusively to a dedicated Windows Edge CDP profile from WSL.",

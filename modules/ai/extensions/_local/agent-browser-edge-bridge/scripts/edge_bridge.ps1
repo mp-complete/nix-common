@@ -157,13 +157,34 @@ function Get-SwitchValues([string[]]$Arguments, [string]$Name) {
   return @($values)
 }
 
+function Get-EdgeProfileValues([string]$CommandLine, [string[]]$Arguments, [string]$ExpectedProfile) {
+  $values = @(Get-SwitchValues $Arguments '--user-data-dir')
+  if ($values.Count -eq 1 -and [string]::Equals([string]$values[0], $ExpectedProfile, [StringComparison]::OrdinalIgnoreCase)) {
+    return $values
+  }
+
+  # Older launchers passed --user-data-dir=<path with spaces> without quotes.
+  # CommandLineToArgvW necessarily truncates that value, but the raw command
+  # line still identifies the exact expected profile. Accept only one exact
+  # token followed by a known Edge flag; do not reconstruct arbitrary paths.
+  $escaped = [regex]::Escape("--user-data-dir=$ExpectedProfile")
+  $legacyMatches = [regex]::Matches(
+    $CommandLine,
+    "(?i)(?:^|\s)$escaped(?=\s+(?:--no-first-run|--no-default-browser-check)(?:\s|$))"
+  )
+  if ($legacyMatches.Count -eq 1) {
+    return @($ExpectedProfile)
+  }
+  return $values
+}
+
 function Assert-EdgeListener($Listener, [string]$ExpectedExe, [string]$ExpectedProfile) {
   $record = Get-ProcessRecord ([int]$Listener.OwningProcess)
   $commandLine = [string]$record.CommandLine
   $actualExe = [string]$record.ExecutablePath
   $arguments = [Win32CommandLine]::Split($commandLine)
   $portValues = @(Get-SwitchValues $arguments '--remote-debugging-port')
-  $profileValues = @(Get-SwitchValues $arguments '--user-data-dir')
+  $profileValues = @(Get-EdgeProfileValues $commandLine $arguments $ExpectedProfile)
   $normalizedExpectedProfile = [IO.Path]::GetFullPath($ExpectedProfile).TrimEnd('\')
 
   if ($Listener.LocalAddress -notin @('127.0.0.1', '::1')) {
