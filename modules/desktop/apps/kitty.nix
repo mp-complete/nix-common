@@ -61,11 +61,10 @@ in
         cursor_blink_interval = "0.8 ease-in-out";
         cursor_stop_blinking_after = 0;
 
-        # Window transparency + blur. Now that niri no longer fills the border
-        # color behind kitty (see draw-border-with-background rule in niri.nix),
-        # the wallpaper shows through. Blur uses the generic Wayland
-        # `ext-background-effect-v1` protocol, which niri 26.04 implements and
-        # kitty 0.46+ drives. dynamic_background_opacity lets us tweak opacity
+        # Window transparency + blur. The consumer's compositor configuration
+        # must avoid filling behind kitty for the wallpaper to show through.
+        # Blur uses the generic Wayland `ext-background-effect-v1` protocol,
+        # driven by kitty 0.46+. dynamic_background_opacity lets us tweak opacity
         # live (ctrl+shift+a > / < by default).
         background_opacity = "0.8";
         dynamic_background_opacity = true;
