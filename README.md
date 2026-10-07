@@ -111,6 +111,7 @@ Common contains **no encrypted credentials, recipient metadata, private endpoint
 - Generic WSL integration remains shared; corporate GPG bootstrap/key delivery and work profiles remain downstream.
 - Personal mounts, WireGuard declarations, SSH exposure and Forgejo runner provisioning remain consumer-owned.
 - Niri's wrapper, NixOS/Home Manager buckets, flake input and binary cache are owned by `nix-personal`. Consumers selecting the `niri` bucket must provide it downstream; common retains the reusable `desktop-wayland` layer and desktop tools.
+- The Zen browser module, flake input and binary cache are owned by `nix-personal`.
 
 Private repository visibility is not a Nix-store secrecy boundary. Never put credentials into derivations; choose builders/caches appropriate for private source.
 
