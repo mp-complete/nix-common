@@ -1,7 +1,6 @@
 {
   flake.modules.homeManager.desktop-core = {
-    # Per-monitor wallpaper folders. noctalia 5.x uses the capital-W
-    # ~/Pictures/Wallpapers base and per-output subdirectories.
+    # Shared wallpaper assets for downstream desktop shells.
     home.file."Pictures/Wallpapers/Horizontal" = {
       source = ./_wallpapers/Horizontal;
       recursive = true;
