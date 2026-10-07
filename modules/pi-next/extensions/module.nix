@@ -5,10 +5,10 @@ let
     piExtensions =
       (prev.piExtensions or { }) // lib.mapAttrs (_: extension: extension.build final) registry;
   };
-  selected =
+  resources =
     kind: pkgs:
     lib.mapAttrsToList (name: _: pkgs.piExtensions.${name}) (
-      lib.filterAttrs (_: extension: extension.enable && extension.kind == kind) registry
+      lib.filterAttrs (_: extension: extension.kind == kind) registry
     );
 in
 {
@@ -18,11 +18,6 @@ in
     type = lib.types.attrsOf (
       lib.types.submodule {
         options = {
-          enable = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Load this resource in the common Pi-next wrapper.";
-          };
           kind = lib.mkOption {
             type = lib.types.enum [
               "package"
@@ -49,8 +44,8 @@ in
       options.pkgs = lib.mkOption {
         apply = pkgs: pkgs.extend overlay;
       };
-      config.piPackages = selected "package" pkgs;
-      config.extensions = selected "extension" pkgs;
+      config.piPackages = resources "package" pkgs;
+      config.extensions = resources "extension" pkgs;
     };
 
     flake.modules.nixos.pi-next.nixpkgs.overlays = [ overlay ];

@@ -41,8 +41,6 @@
           programs.agent-skills.sources.consumer.path = inputs.consumer-data + "/skills";
         };
         flake.wrappers.tmux.binName = "consumer-tmux";
-        # Disable one inherited resource without replacing the package list.
-        pi-next.extensions.plannotator.enable = false;
         flake.wrappers.pi-next = { lib, ... }: {
           binName = "consumer-pi";
           skills = [ (inputs.consumer-data + "/skills") ];

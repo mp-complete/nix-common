@@ -106,22 +106,22 @@ never use mutable `pi install` as the implementation of a Nix change.
 The registry lives in `modules/pi-next/extensions/`:
 
 - `module.nix` defines `pi-next.extensions`, assembles the additive package
-  overlay, and selects enabled resources for the wrapper.
+  overlay, and loads every registered resource in the wrapper.
 - Each extension has its own flake-parts module (for example `plannotator.nix`)
-  declaring `pi-next.extensions.<name>.build = pkgs: ...`. Entries are enabled
-  by default; `kind = "extension"` selects a single file rather than a package.
+  declaring `pi-next.extensions.<name>.build = pkgs: ...`.
+  `kind = "extension"` selects a single file rather than a package.
 - `_npm-source.nix` is the internal complete-root packaging helper, and
   `_rpiv-config.nix` is the shared RPIV dependency. Underscore-prefixed helpers
   are excluded from import-tree's module discovery.
 - `plannotator-dependencies.json` sits beside `plannotator.nix` and retains its
   exact tarball pins and dependency links.
 
-Consumers can disable a single resource with
-`pi-next.extensions.plannotator.enable = false;` or add their own registry
-entry. These are flake-parts settings, outside `flake.wrappers.pi-next`.
-The exported `.wrap` interface also supports replacing `piPackages` or
-`extensions` with `lib.mkForce` without changing the registry. Enabled registry
-entries load in name order; all previous package pins are retained.
+Registration includes the resource in the common wrapper; there are no
+per-entry enable switches. Consumers can add registry entries as flake-parts
+settings, outside `flake.wrappers.pi-next`. The exported `.wrap` interface
+supports replacing `piPackages` or `extensions` with `lib.mkForce` without
+changing the registry. Entries load in name order; all previous package pins
+are retained.
 
 The current package pins are:
 
@@ -334,7 +334,7 @@ opt into the `"pi-next"` bucket explicitly; no host selections are made here.
 The baseline checks in `tests/pi-next/checks.nix` are producer-only, so consumers
 can change resources or rename the executable without inheriting hard-coded
 baseline test expectations. The separate `example` consumer checks extension
-of the wrapper, per-extension disabling, Home Manager selection, profile isolation, and the
+of the wrapper, inherited resources, Home Manager selection, profile isolation, and the
 common-owned skill source without declaring the wrapper's inputs itself.
 Interactive login, authenticated MCP, provider inference and full host builds
 are outside these checks.

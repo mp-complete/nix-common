@@ -30,8 +30,8 @@ jq -e --arg dir "$XDG_CONFIG_HOME/consumer-pi" '
   and (.skills | index("mk-pi-extension") != null)
   and (.skills | index("btw") != null)
   and (.commands | index("todos") != null)
-  and (.commands | index("plannotator-review") == null)
-  and (.skills | index("plannotator") == null)
+  and (.commands | index("plannotator-review") != null)
+  and (.skills | index("plannotator") != null)
   and (.appendedPrompt | contains("Independent consumer instructions."))
 ' probe.json || { cat probe.json >&2; exit 1; }
 test ! -e "$XDG_CONFIG_HOME/pi-next"

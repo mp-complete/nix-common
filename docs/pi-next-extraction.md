@@ -12,7 +12,7 @@ can replace its duplicate definitions with extensions of this shared wrapper.
 | --- | --- |
 | Pi runtime, launcher-only package, self-update/offline defaults | Common; preserve the exact upstream input/runtime pins and legacy coexistence |
 | `pi-next` wrapper and standalone Home Manager/NixOS buckets | Common; host selection remains downstream |
-| Eight pinned npm resource roots and dependency closure | Common; one extension module per resource under `modules/pi-next/extensions/`, per-entry enable switches, additive lists replaceable with `mkForce` |
+| Eight pinned npm resource roots and dependency closure | Common; one extension module per resource under `modules/pi-next/extensions/`, all registered resources loaded, additive lists replaceable with `mkForce` |
 | Official notifier | Common; selects its transport at runtime, does not require a WSL bucket |
 | Exa MCP | Common, overridable defaults; public anonymous service, not a corporate integration; requests disclose queries/URLs to a third party |
 | `mk-pi-extension` skill bundle and shared skills source | Common; source stays in the pinned upstream input, no copied skill implementation |
@@ -53,23 +53,24 @@ other architecture support from upstream prebuilds.
 - Evaluate the separate `example#consumerContract` and build its
   `checks.x86_64-linux.consumer-pi`, with the local common input override shown
   in `tests/validate.sh`. The fixture declares no Pi/skills dependency inputs
-  and extends the base with its own name, explicit skill, prompt, MCP policy and
-  a disabled Plannotator registry entry.
+  and extends the base with its own name, explicit skill, prompt and MCP policy
+  while retaining the common resources.
 - Run the source-boundary check and `nix flake check --no-build`.
 - No activation, provider inference, delegated jobs, live PTYs, browser reviews,
   authentication helpers or real notification delivery are part of validation.
 
 ## Validation results
 
-Validated on x86_64-linux after the per-extension registry split:
+Validated on x86_64-linux after the per-extension registry split and removal of
+per-entry enable switches:
 
 - `packages.x86_64-linux.pi-next` and all four baseline `pi-next*` checks passed.
 - `bash tests/validate.sh --build` passed: source boundaries, independent consumer
   contract, flake evaluation, existing local extension tests, consumer wrapper
   builds, and the legacy Pi-agent/Edge bootstrap build checks.
 - The customized consumer loaded its own skill and prompt, used its renamed XDG
-  profile, registered no MCP servers, omitted disabled Plannotator, and retained
-  the common skill and other enabled extensions.
+  profile, registered no MCP servers, and retained the common skill and
+  extensions, including Plannotator.
 - Nix formatting and Git whitespace checks passed. Existing common input pins
   were unchanged; the added Pi dependency graph matches the work source pins.
 
