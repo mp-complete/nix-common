@@ -73,6 +73,16 @@ Each file under a consumer's `modules/` is a flake-parts module. It can merge an
 
 Wrappers remain explicit: `config.flake.wrappers.<name>.wrap { inherit pkgs; }`. There is no global wrapper overlay. The Pi registry is `pi.extensions`; wrapper extension lists and system prompt files can be extended using normal module merging.
 
+The opt-in **`pi-next`** bucket is a separate Pi 1.0.0 base with pinned npm
+resources, the official completion notifier, Exa MCP, and the upstream
+`mk-pi-extension` skill. It does not replace legacy `pi` or require the `ai`,
+desktop, or WSL buckets. Extend `flake.wrappers.pi-next` in the consumer, or
+call `inputs.common.wrappers.pi-next.wrap { inherit pkgs; ... }` for another
+package. Renaming `binName` also changes its default XDG profile directory.
+See [pi-next integration](docs/pi-next.md) for resource pins, overrides, safety
+boundaries, and validation, and [the extraction scope](docs/pi-next-extraction.md)
+for what stays downstream.
+
 For private/local skills, extend the registry and supply the source downstream:
 
 ```nix
@@ -123,6 +133,7 @@ The producer uses the same reusable module with neutral example identity solely 
 ```sh
 nix build .#tmux --no-link
 nix build .#pi-desktop --no-link
+nix build .#pi-next --no-link
 nix build .#nvim --no-link
 bash tests/validate.sh --build
 ```

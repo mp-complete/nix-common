@@ -32,6 +32,11 @@
       url = "github:milespossing/nix-wrapper-modules/fix/television-themes";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    pi-nix-wrapper = {
+      url = "github:mp-complete/pi-nix-wrapper";
+      inputs.nix-wrapper-modules.follows = "nix-wrapper-modules";
+      # Keep Pi's upstream-tested runtime/package set independent of legacy Pi.
+    };
     llm-agents.url = "github:numtide/llm-agents.nix";
     worktrunk-flake = {
       url = "github:max-sixty/worktrunk";
@@ -54,7 +59,10 @@
       };
     in
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ commonModule ];
+      imports = [
+        commonModule
+        ./tests/pi-next/checks.nix
+      ];
       # Producer settings are only for standalone package/check outputs.
       # Consumers import commonModule unevaluated and supply their own identity.
       username = "example";
