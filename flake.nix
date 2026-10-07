@@ -33,7 +33,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
-    noctalia.url = "github:noctalia-dev/noctalia/cachix";
     worktrunk-flake = {
       url = "github:max-sixty/worktrunk";
       inputs.nixpkgs.follows = "nixpkgs";

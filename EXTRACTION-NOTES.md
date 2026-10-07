@@ -30,6 +30,10 @@ Minimal decoupling:
 - The disabled historical documentation-maintenance job, still targeting the old repository.
 - New personal evaluation/regression CI, rather than old host-specific Forgejo workflows.
 
+After extraction, Niri, Zen browser and Noctalia ownership moves downstream.
+Noctalia's Home Manager module and templated TOML configuration, input and
+binary cache belong in `nix-personal`; reusable wallpaper assets remain common.
+
 Existing mixed SOPS documents are handled only in the private consumer; see its README for the byte-preserving ciphertext limitation. They are never included here.
 
 ## Retained only in the original source for later work migration

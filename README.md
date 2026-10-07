@@ -34,7 +34,7 @@ Extracted from `mp-complete/nixdots` at `75a7ef92dc874c0812f08beaf4eb619bc164ecb
 }
 ```
 
-Commit your own `flake.lock`. `common` is independently pinned by each consumer. Align Nixpkgs/Home Manager through `follows` rather than accidentally introducing multiple competing package sets. Pi and Noctalia deliberately retain their upstream-tested package sets; do not blanket-rewrite every transitive Nixpkgs input.
+Commit your own `flake.lock`. `common` is independently pinned by each consumer. Align Nixpkgs/Home Manager through `follows` rather than accidentally introducing multiple competing package sets. Pi deliberately retains its upstream-tested package set; do not blanket-rewrite every transitive Nixpkgs input.
 
 A file such as `modules/hosts/laptop.nix` can use the shared builder:
 
@@ -112,6 +112,7 @@ Common contains **no encrypted credentials, recipient metadata, private endpoint
 - Personal mounts, WireGuard declarations, SSH exposure and Forgejo runner provisioning remain consumer-owned.
 - Niri's wrapper, NixOS/Home Manager buckets, flake input and binary cache are owned by `nix-personal`. Consumers selecting the `niri` bucket must provide it downstream; common retains the reusable `desktop-wayland` layer and desktop tools.
 - The Zen browser module, flake input and binary cache are owned by `nix-personal`.
+- Noctalia's Home Manager bucket, TOML configuration, flake input and binary cache are owned by `nix-personal`. Consumers using the `noctalia` bucket must provide it downstream; common retains reusable wallpaper assets and their `desktop-core` installation.
 
 Private repository visibility is not a Nix-store secrecy boundary. Never put credentials into derivations; choose builders/caches appropriate for private source.
 
