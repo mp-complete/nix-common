@@ -43,9 +43,9 @@ Existing mixed SOPS documents are handled only in the private consumer; see its 
 - Fabric shell aspect and Trident warehouse dev-shell profile.
 - `warehouse-ux-pr-review` skill and its source assets.
 - The corporate MCP overlay (`overlays/agent-mcps`) with internal endpoint/tenant bindings; it is not a generic public overlay.
-- Work WSL GPG key/bootstrap and gateway-token deployment bindings.
+- WSL deployment configuration and GPG bootstrap/key delivery.
 
-Generic WSL/public vendor tooling is not treated as corporate configuration merely because the original work machines selected it.
+WSL configuration is intentionally excluded from common and belongs in a downstream consumer.
 
 ## Deliberately unchanged
 

@@ -148,8 +148,8 @@ in
 
         # Alt-p: pi in a new tab, in the focused window's cwd. `pi` is resolved
         # from PATH rather than pinned to a store path because which wrapper is
-        # installed differs per host (pi-desktop vs pi-wsl, see modules/ai/pi.nix),
-        # so the kitty wrapper must not depend on either. Mirrors `M-p` in
+        # installed differs per host, so the kitty wrapper must not depend on a
+        # specific package. Mirrors `M-p` in
         # shell/tmux.nix.
         "alt+p" = "launch --type=tab --cwd=current pi";
 

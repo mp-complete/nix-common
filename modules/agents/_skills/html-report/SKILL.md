@@ -4,7 +4,7 @@ description: Use when the user explicitly asks for an HTML report, a "report", a
 metadata:
   author: miles
   version: "0.1"
-compatibility: Requires node (>= 18) on PATH. Optional `wsl-open` on WSL, `xdg-open` on native Linux. The vega-lite chart block fetches Vega + Vega-Lite + vega-embed from jsdelivr at *view time* (online needed only when actually viewing such a report); everything else is fully inlined.
+compatibility: Requires node (>= 18) and `xdg-open` on PATH. The vega-lite chart block fetches Vega + Vega-Lite + vega-embed from jsdelivr at *view time* (online needed only when actually viewing such a report); everything else is fully inlined.
 ---
 
 # html-report
@@ -149,9 +149,8 @@ Common flags:
 - `--out <dir>` — explicit output directory. Default:
   `$AGENT_REPORTS_DIR/<slug>-<YYYY-MM-DDTHH-MM>/` (fall-back
   `~/reports/...`).
-- `--open` — open the report in the user's default browser after
-  build. On WSL this routes via `wsl-open` to the *Windows* default
-  browser (where your bookmarks and sessions live), not the Linux one.
+- `--open` — open the report in the user's default browser after build using
+  `xdg-open`.
 - `--langs nix,typescript,bash,...` — override the bundled
   highlight.js languages. Default is the common-stack set; see
   [`references/code-blocks.md`](references/code-blocks.md).
@@ -238,9 +237,8 @@ These hold across every report. Re-read
 
 - [`scripts/build.mjs`](scripts/build.mjs) — the assembler. Reads a
   spec, writes `index.html`. Vanilla Node, no npm deps.
-- [`scripts/open-report.sh`](scripts/open-report.sh) — opens a report
-  in the user's default browser (`wsl-open` on WSL, `xdg-open`
-  elsewhere). Accepts a path, a slug, or `latest`.
+- [`scripts/open-report.sh`](scripts/open-report.sh) — opens a report in the
+  user's default browser using `xdg-open`. Accepts a path, a slug, or `latest`.
 - [`scripts/serve.sh`](scripts/serve.sh) — serves
   `$AGENT_REPORTS_DIR` over HTTP via `jwebserver` and generates an
   index page listing every report newest-first.

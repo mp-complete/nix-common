@@ -94,7 +94,7 @@ in
       # Everything runs through `tmux send-keys`, i.e. the program is typed
       # into the target session's shell. That resolves it against the *user's*
       # PATH rather than tv's or the tmux server's (which matters for `pi`,
-      # since the binary is either pi-desktop or pi-wsl depending on the host),
+      # since the installed binary depends on the host),
       # and quitting the program leaves a usable prompt instead of a window
       # that vanishes.
       seshOpen = pkgs.writeShellScript "sesh-open" ''

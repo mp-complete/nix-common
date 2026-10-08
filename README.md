@@ -143,7 +143,7 @@ Common contains **no encrypted credentials, recipient metadata, private endpoint
 - `ai.secretSource = ./api-keys.enc.yaml` optionally binds consumer-owned SOPS YAML containing `github`. Default `null` permits normal interactive Copilot authentication without creating secret declarations or an `ai-env` template.
 - Generic OpenClaw service buckets retain their process isolation/hardening. A node requires `services.openclaw-node.gatewayTokenFile`; a gateway requires flake-parts `openclaw.gatewayTokenFile`. These are runtime paths, never plaintext Nix strings. Consumers own provisioning, ownership/mode and restart behavior. Optional `openclaw.model` and `openclaw.publicUrl` have no personal defaults.
 - Generic Atuin configuration remains shared; its encrypted sync key/binding is consumer-owned.
-- Generic WSL integration remains shared; corporate GPG bootstrap/key delivery and work profiles remain downstream.
+- WSL integration, including its GPG bootstrap/key delivery, remains downstream.
 - Personal mounts, WireGuard declarations, SSH exposure and Forgejo runner provisioning remain consumer-owned.
 - Niri's wrapper, NixOS/Home Manager buckets, flake input and binary cache are owned by `nix-personal`. Consumers selecting the `niri` bucket must provide it downstream; common retains the reusable `desktop-wayland` layer and desktop tools.
 - The Zen browser module, flake input and binary cache are owned by `nix-personal`.

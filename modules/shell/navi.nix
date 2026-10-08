@@ -75,15 +75,14 @@
       options.navi.cheatDirs = lib.mkOption {
         type = lib.types.attrsOf lib.types.path;
         default = { };
-        example = lib.literalExpression "{ wsl = ./_navi/wsl; }";
+        example = lib.literalExpression "{ project = ./_navi/project; }";
         description = ''
           Directories of locally authored `.cheat` files, keyed by the name
           they get under `~/.cheats/`. Each one is staged with `home.file` and
           added to navi's `cheats.paths`.
 
           An option rather than a plain list so that buckets other than `base`
-          can contribute cheats that only make sense on some hosts -- see
-          `wsl/navi.nix`, whose cheats shell out to `pwsh.exe`.
+          can contribute cheats that only make sense on some hosts.
         '';
       };
 

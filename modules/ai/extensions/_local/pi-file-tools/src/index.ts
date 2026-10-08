@@ -10,9 +10,9 @@
  *     }
  *
  * …i.e. with the tools disabled the harness actively instructs the model to
- * shell out to `find`, which is how an unbounded `find /` ends up on a WSL
- * box with `/mnt/c` mounted. Turning the tools on removes that guideline and
- * replaces it with pi's own `find`, which is fd-backed, defaults to the cwd,
+ * shell out to `find`, which can lead to an unbounded `find /`. Turning the
+ * tools on removes that guideline and replaces it with pi's own `find`, which
+ * is fd-backed, defaults to the cwd,
  * respects .gitignore, and truncates at 1000 results / 50KB.
  *
  * Why an extension rather than the `--tools` CLI flag: `--tools` sets

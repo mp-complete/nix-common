@@ -22,7 +22,6 @@ precedence when they are more specific.
   `nix flake metadata --json`, `nix build --print-out-paths`, or `nix eval` on a
   config attr — never from hunting `/nix/store`. Ask "what is authoritative here?"
   before reaching for `find`/`rg`.
-- Never scan the filesystem from `/` or `/nix/store`. These are WSL hosts with
-  `/mnt/c` mounted, so an unbounded scan crawls the Windows drive and hangs. If a
-  search is genuinely necessary, root it at a specific directory and bound it with
-  `-maxdepth`.
+- Never scan the filesystem from `/` or `/nix/store`. An unbounded scan can be
+  prohibitively slow. If a search is genuinely necessary, root it at a specific
+  directory and bound it with `-maxdepth`.

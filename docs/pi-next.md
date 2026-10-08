@@ -8,7 +8,7 @@ feature. Use `wrappers.pi-next` (`.wrap` / `.apply`) or the unevaluated
 result explicitly. Common supplies no `pi-next` Home Manager/NixOS bucket,
 standalone `packages.<system>.pi-next`, or public Pi-next overlay. It does not
 add Pi-specific sources to the global `skills` bucket. The base does not depend
-on `pi.enable`, desktop or WSL configuration.
+on `pi.enable` or desktop configuration.
 
 The wrapper imports `pi-nix-wrapper.wrapperModules.pi` and explicitly chooses
 its pinned pi-nix Node runtime (currently Pi 1.0.0). It does not change the
@@ -209,8 +209,8 @@ upstream default; no credentials or opt-in settings are supplied. User config
 is read from the selected agent directory's `interactive-shell.json`, and the
 extension also reads `<cwd>/.pi/interactive-shell.json`. Its launch policy is
 not a sandbox. For long quiet builds, disable dispatch quiet auto-close and
-require actual process-exit evidence before reporting success. Linux/WSL
-interactive PTYs, cancellation, overlays and monitoring remain untested;
+require actual process-exit evidence before reporting success. Interactive PTYs,
+cancellation, overlays and monitoring remain untested;
 validation only loads resources and the native library, without opening a PTY.
 
 ### Official completion notifications
@@ -224,8 +224,8 @@ It registers `agent_settled`, not `agent_end`, so retries, compaction and queued
 continuations can finish before it announces “Ready for input.” This is main
 session readiness, not proof all detached subagents have completed.
 
-Upstream chooses Windows Terminal/WSL PowerShell toasts when `WT_SESSION` is
-set, Kitty OSC 99 when `KITTY_WINDOW_ID` is set, otherwise OSC 777. Toasts need
+Upstream chooses Windows Terminal PowerShell toasts when `WT_SESSION` is set,
+Kitty OSC 99 when `KITTY_WINDOW_ID` is set, otherwise OSC 777. Toasts need
 `powershell.exe` on PATH and enabled Windows notifications; OSC behavior depends
 on the terminal. No transport, sound, authentication or Windows settings are
 changed here. The dedicated `pi-next-notify` build test captures all output and
@@ -341,10 +341,9 @@ source or selection.
 
 `checks.x86_64-linux.pi-next` builds the base through `.wrap`'s module evaluation
 and tests explicit installation in a standalone Home Manager fixture without
-`ai`, base, desktop or WSL modules. That test environment also includes
-the legacy `pi-wsl` package; `checks.x86_64-linux.pi-next-coexistence` builds its
-actual Home Manager package environment to catch collisions between the two
-runtimes. The `pi-next` smoke check runs the real binary in a disposable HOME,
+`ai`, base, or desktop modules. `checks.x86_64-linux.pi-next-coexistence` builds
+its actual Home Manager package environment to catch package collisions. The
+`pi-next` smoke check runs the real binary in a disposable HOME,
 checking native resources, absence of legacy tools/prompts/skills, default
 and overridden config paths (including spaces), package/MCP subcommand dispatch,
 and blocked self-updates. It also checks the generated Exa registration while

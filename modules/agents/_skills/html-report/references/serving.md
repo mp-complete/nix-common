@@ -37,10 +37,7 @@ bash "$AGENTS_SKILLS_DIR/html-report/scripts/open-report.sh" latest
 bash "$AGENTS_SKILLS_DIR/html-report/scripts/open-report.sh" order-write-lock-2026-06-15T14-30
 ```
 
-On WSL the script uses `wsl-open`, which routes to the *Windows*
-default browser (`Edge` if that's your Windows default). On native
-Linux it uses `xdg-open`, which routes to the Linux default browser
-(Firefox in your config).
+The script uses `xdg-open`, which routes to the default browser.
 
 For the build script, just pass `--open`:
 

@@ -139,8 +139,7 @@
         ga = "git add";
         # difftool/mergetool are long to type and the tool is worth having
         # visible in the buffer -- these expand in place, so appending
-        # `-t bcompare` (modules/wsl/beyond-compare.nix) or a pathspec is just
-        # more typing on the same line.
+        # a tool selector or pathspec is just more typing on the same line.
         gdt = "git difftool";
         gmt = "git mergetool";
         gp = "git pull";
