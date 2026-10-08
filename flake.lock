@@ -716,6 +716,7 @@
         "nixpkgs": "nixpkgs_5",
         "pi-nix-wrapper": "pi-nix-wrapper",
         "sops-nix": "sops-nix",
+        "unslop": "unslop",
         "worktrunk-flake": "worktrunk-flake"
       }
     },
@@ -882,6 +883,22 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "unslop": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788821123,
+        "narHash": "sha256-M/w0ASIxhBmcSS2eNOh92IRb5hJg1cugLoCLbsC34Oo=",
+        "owner": "theclaymethod",
+        "repo": "unslop",
+        "rev": "17ed39c9d0b522f44190ff0c6233867eadee192a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "theclaymethod",
+        "repo": "unslop",
         "type": "github"
       }
     },

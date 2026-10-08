@@ -95,6 +95,13 @@
           assert h.home.stateVersion == "24.11";
           assert h.programs.git.settings.user.email == "consumer@example.invalid";
           assert lib.elem "consumer-skill" skills.skills.enable;
+          assert lib.elem "unslop" skills.skills.enable;
+          assert skills.catalog.unslop.source == "unslop";
+          assert skills.catalog.unslop.relPath == "";
+          assert toString skills.sources.unslop.path == toString inputs.nix-common.inputs.unslop;
+          assert lib.any (
+            p: p.outPath == config.flake.nixosConfigurations.fixture.pkgs.python3.outPath
+          ) h.home.packages;
           assert
             commonSkillNames == [
               "context-reflect"
@@ -126,18 +133,40 @@
             homeFiles = builtins.attrNames h.home.file;
           };
 
-        perSystem = { config, pkgs, ... }: {
-          checks.consumer-wrapper = pkgs.runCommand "consumer-wrapper" { } ''
-            ${config.packages.tmux}/bin/consumer-tmux -V | grep tmux
-            touch "$out"
-          '';
-          checks.consumer-pi =
-            assert !(config.packages ? pi-next);
-            pkgs.runCommand "consumer-pi" { nativeBuildInputs = [ pkgs.jq ]; } ''
-              bash ${../tests/pi-next/consumer.sh} ${config.packages.consumer-pi} ${../tests/pi-next/probe.ts}
+        perSystem =
+          { pkgs, ... }@system:
+          {
+            checks.consumer-skills =
+              let
+                skills =
+                  config.flake.nixosConfigurations.fixture.config.home-manager.users.consumer.programs.agent-skills;
+              in
+              pkgs.runCommand "consumer-skills" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+                skill=${skills.targetBundlePaths.agents}/unslop
+                test -f "$skill/SKILL.md"
+                test -f "$skill/references/core-contract.md"
+                test -f "$skill/references/packs/manifest.json"
+                test -f "$skill/presets/crisp-human.md"
+                for command in cleanup rewrite teach mimic; do
+                  test -f "$skill/references/commands/$command.md"
+                done
+                # Run outside the source tree to exercise bundled resource resolution.
+                export PYTHONDONTWRITEBYTECODE=1
+                printf 'The file contains 12 rows.\n' | python3 "$skill/scripts/banned_phrase_scan.py" > scan.json
+                python3 -c 'import json; assert json.load(open("scan.json"))["total_violations"] == 0'
+                touch "$out"
+              '';
+            checks.consumer-wrapper = pkgs.runCommand "consumer-wrapper" { } ''
+              ${system.config.packages.tmux}/bin/consumer-tmux -V | grep tmux
               touch "$out"
             '';
-        };
+            checks.consumer-pi =
+              assert !(system.config.packages ? pi-next);
+              pkgs.runCommand "consumer-pi" { nativeBuildInputs = [ pkgs.jq ]; } ''
+                bash ${../tests/pi-next/consumer.sh} ${system.config.packages.consumer-pi} ${../tests/pi-next/probe.ts}
+                touch "$out"
+              '';
+          };
       }
     );
 }

@@ -18,6 +18,10 @@
       url = "github:mattpocock/skills";
       flake = false;
     };
+    unslop = {
+      url = "github:theclaymethod/unslop";
+      flake = false;
+    };
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
