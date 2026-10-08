@@ -54,6 +54,7 @@
       programs.password-store.settings = { };
       fonts.fontconfig.enable = true;
       home.packages = with pkgs; [
+        wl-clipboard
         wsl-open
         xdg-utils
       ];
