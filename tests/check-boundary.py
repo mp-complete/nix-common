@@ -4,6 +4,12 @@ from pathlib import Path
 import subprocess
 
 root = Path(__file__).resolve().parent.parent
+# WSL support belongs in downstream consumers, not in this reusable library.
+assert not (root / "modules/wsl").exists(), "WSL modules bundled"
+assert not (root / "pkgs/clp").exists(), "WSL clipboard package bundled"
+assert "nixos-wsl" not in (root / "flake.nix").read_text(), "WSL input declared"
+assert "pi-wsl" not in (root / "modules/ai/pi.nix").read_text(), "WSL Pi wrapper declared"
+
 # These skills are consumer-owned. Do not reintroduce bundled copies or a
 # dependency on the private collection merely to validate this boundary.
 for skill in ("ado-pr-markdown", "browser-control", "figma-to-spec", "fluent-ui-v9"):

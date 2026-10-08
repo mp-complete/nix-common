@@ -137,9 +137,9 @@ in
 
         # Alt-p (no prefix): pi in a new window, in the focused pane's CWD.
         # `pi` is resolved from PATH rather than pinned to a store path
-        # because which wrapper is installed differs per host (pi-desktop vs
-        # pi-wsl, see modules/ai/pi.nix), so the tmux wrapper must not depend
-        # on either. automatic-rename-format labels the window `pi`.
+        # because which wrapper is installed differs per host, so the tmux
+        # wrapper must not depend on a specific package. automatic-rename-format
+        # labels the window `pi`.
         bind -N "open pi in a new window (cwd)" -n M-p new-window -c "#{pane_current_path}" pi
 
         # --- television (tv) pickers ------------------------------------

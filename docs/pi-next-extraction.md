@@ -14,7 +14,7 @@ repin any work/personal checkout; their installation modules migrate separately.
 | `pi-next` wrapper/module API | Common; no standalone base package or installation buckets; consumers extend then install |
 | Extension overlay | Private to the wrapper's package set; not exported or applied to a host |
 | Eight pinned npm resource roots and dependency closure | Common; one extension module per resource under `modules/pi-next/extensions/`, all registered resources loaded, additive lists replaceable with `mkForce` |
-| Official notifier | Common; selects its transport at runtime, does not require a WSL bucket |
+| Official notifier | Common; selects its transport at runtime, does not require a platform-specific bucket |
 | Exa MCP | Common, overridable defaults; public anonymous service, not a corporate integration; requests disclose queries/URLs to a third party |
 | `mk-pi-extension` skill bundle | Common wrapper resource only; any global Home Manager skill installation is consumer-owned |
 | Resource-loading, native-library, mocked-notification and coexistence checks | Common; baseline checks are producer-only, with a separate customized consumer check |

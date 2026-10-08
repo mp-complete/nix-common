@@ -475,13 +475,11 @@ function renderSources(sources) {
 }
 
 async function openInBrowser(indexPath) {
-  const isWsl = process.env.WSL_DISTRO_NAME || process.env.WSL_INTEROP;
-  const cmd = isWsl ? 'wsl-open' : 'xdg-open';
-  await new Promise((res) => {
-    const child = spawn(cmd, [indexPath], { detached: true, stdio: 'ignore' });
-    child.on('error', () => res());
+  await new Promise((resolve) => {
+    const child = spawn('xdg-open', [indexPath], { detached: true, stdio: 'ignore' });
+    child.on('error', () => resolve());
     child.unref();
-    res();
+    resolve();
   });
 }
 

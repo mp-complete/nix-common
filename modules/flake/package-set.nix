@@ -12,7 +12,7 @@ let
 in
 {
   # Use the consumer's nixpkgs for flake-side wrapper outputs such as
-  # pi-desktop and pi-wsl.
+  # pi-desktop.
   perSystem =
     { system, ... }:
     {

@@ -8,8 +8,7 @@
   "keywords": [
     "pi-package",
     "pi-extension",
-    "guardrail",
-    "wsl"
+    "guardrail"
   ],
   "scripts": {
     "test": "node --test 'test/*.test.mjs'"

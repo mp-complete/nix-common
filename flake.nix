@@ -47,7 +47,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
-    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     fennel-ls-nvim-docs = {
       url = "git+https://git.sr.ht/~micampe/fennel-ls-nvim-docs";
       flake = false;

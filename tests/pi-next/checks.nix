@@ -32,7 +32,6 @@ in
             # Exercise Home Manager's actual package merge with the legacy Pi.
             home.packages = [
               wrapper
-              config.packages.pi-wsl
             ];
           }
         ];

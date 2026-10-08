@@ -8,7 +8,6 @@ let
   agentsMd = builtins.readFile ./AGENTS.md;
 
   # Extension sets per variant, by registry name (see modules/ai/extensions/).
-  # Mirrors the old baseline + extensions-base (+ extensions-wsl) bundles.
   desktopExtensions = [
     "pi-catppuccin" # Catppuccin theme pack for pi's TUI
     "rpiv-todo" # live todo overlay across reload / compaction
@@ -24,13 +23,6 @@ let
     "pi-file-tools" # enable pi's built-in find/grep/ls tools
     "pi-presence" # publish per-session state for the pi-sessions tv channel
   ];
-  wslExtensions = desktopExtensions ++ [
-    "pi-wsl-images" # Alt+V image paste from the Windows clipboard
-    "pi-windows-tools" # Windows shell execution, path conversion, and WSL bridge
-    "pi-chrome-use" # CDP-only browser execution against Windows Edge
-    "agent-browser-edge-bridge" # verify and route browser_execute to dedicated Edge
-  ];
-
   # Headless variant for the `pi-agent` daemon (modules/ai/pi-agent.nix).
   #
   # THE RULE: every extension that can block waiting on a human must stay out,
@@ -167,27 +159,20 @@ let
     };
 in
 {
-  # Two first-class wrappers (auto-exposed as `.#pi-desktop` / `.#pi-wsl`,
-  # built by `nix flake check`).
+  # First-class desktop wrapper (auto-exposed as `.#pi-desktop`, built by
+  # `nix flake check`).
   flake.wrappers.pi-desktop = mkPi desktopExtensions;
-  flake.wrappers.pi-wsl =
-    { pkgs, ... }:
-    {
-      imports = [ (mkPi wslExtensions) ];
-      # The bridge verifies cached PowerShell script bytes with cmp.
-      runtimePkgs = [ pkgs.diffutils ];
-    };
 
   # Headless wrapper consumed by the `pi-agent` bucket (`nix build .#pi-daemon`).
   flake.wrappers.pi-daemon = mkPi daemonExtensions;
 
   # Gate option declared in `base` (always imported on every host) so the
-  # desktop-core / wsl buckets can install pi only when the ai bucket has
-  # also turned it on — i.e. strict "ai AND desktop" / "ai AND wsl".
+  # The desktop-core bucket can install pi only when the ai bucket has also
+  # turned it on.
   flake.modules.homeManager.base =
     { lib, ... }:
     {
-      options.pi.enable = lib.mkEnableOption "the pi coding agent (installed by the desktop-core / wsl buckets when the ai bucket is also enabled)";
+      options.pi.enable = lib.mkEnableOption "the pi coding agent (installed by the desktop-core bucket when the ai bucket is also enabled)";
     };
 
   # The ai bucket turns pi on.
@@ -211,17 +196,5 @@ in
           configDir = "${config.home.homeDirectory}/.config/pi-work";
         })
       ];
-    };
-
-  # ai AND wsl  -> pi-wsl
-  flake.modules.homeManager.wsl =
-    {
-      config,
-      lib,
-      pkgs,
-      ...
-    }:
-    lib.mkIf config.pi.enable {
-      home.packages = [ (outer.flake.wrappers.pi-wsl.wrap { inherit pkgs; }) ];
     };
 }

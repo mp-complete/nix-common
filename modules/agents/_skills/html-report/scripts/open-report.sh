@@ -34,9 +34,7 @@ if ! [ -f "$index" ]; then
   exit 1
 fi
 
-if [ -n "${WSL_DISTRO_NAME:-}${WSL_INTEROP:-}" ] && command -v wsl-open >/dev/null 2>&1; then
-  exec wsl-open "$index"
-elif command -v xdg-open >/dev/null 2>&1; then
+if command -v xdg-open >/dev/null 2>&1; then
   exec xdg-open "$index"
 else
   echo "no opener found; open manually: file://$index"

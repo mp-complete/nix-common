@@ -2,10 +2,9 @@
  * Pure detection logic for pi-scan-guard, kept as plain ESM (not TS) so
  * `node --test` can import it directly without a TypeScript loader.
  *
- * Goal: catch unbounded filesystem scans *before* they run. On WSL hosts
- * `/mnt/c` is a mounted Windows drive, so `find /` walks two operating
- * systems and effectively hangs. The same applies to `/nix/store`, which
- * routinely holds hundreds of thousands of paths.
+ * Goal: catch unbounded filesystem scans *before* they run. Scans rooted at
+ * `/` can effectively hang, and `/nix/store` routinely holds hundreds of
+ * thousands of paths.
  *
  * Design notes:
  *   - We do NOT try to fully parse shell grammar. We split into rough
@@ -169,8 +168,7 @@ export function explain({ tool, root }) {
 	return [
 		`Unbounded filesystem scan blocked: \`${tool}\` rooted at \`${root}\`.`,
 		"",
-		"On these WSL hosts `/mnt/c` is a mounted Windows drive, so a scan from",
-		"a root like this crawls the entire Windows filesystem and hangs.",
+		"A scan from a root like this can crawl an entire filesystem and hang.",
 		"",
 		"Resolve the path with the domain's own tooling instead:",
 		"  • flake input      nix eval --raw .#inputs.<name>.outPath",

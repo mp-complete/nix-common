@@ -8,14 +8,12 @@ consumer_args=(--override-input nix-common "path:$PWD"
   --override-input consumer-data "path:$PWD/example/fixture-data" --no-write-lock-file)
 nix eval --json ./example#consumerContract "${consumer_args[@]}"
 nix flake check --no-build --no-write-lock-file
-node --test modules/ai/extensions/_local/pi-scan-guard/test/*.test.mjs \
-  modules/ai/extensions/_local/agent-browser-edge-bridge/test/*.test.mjs
+node --test modules/ai/extensions/_local/pi-scan-guard/test/*.test.mjs
 if [[ ${1:-} == --build ]]; then
   nix build ./example#checks.x86_64-linux.consumer-wrapper \
     ./example#checks.x86_64-linux.consumer-pi \
     ./example#checks.x86_64-linux.consumer-skills "${consumer_args[@]}" --no-link
   nix build .#checks.x86_64-linux.pi-agent-eval \
-    .#checks.x86_64-linux.edge-cdp-bootstrap \
     .#checks.x86_64-linux.pi-next-api \
     .#checks.x86_64-linux.pi-next \
     .#checks.x86_64-linux.pi-next-skills \
