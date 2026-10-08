@@ -112,7 +112,17 @@ For private/local skills, extend the registry and supply the source downstream:
 
 `skills.builtinExtra` adds always-selected consumer skills. The bundled generic
 skills are `context-reflect`, `html-report`, and `writing-skills`, alongside the
-enabled upstream engineering/productivity collection. Microsoft-owned skills
+enabled upstream engineering/productivity collection and
+[`unslop`](https://github.com/theclaymethod/unslop) for prose cleanup, rewriting,
+and voice teaching/mimicry. Unslop is pinned as a flake input and installed with
+its scripts, references, and presets at `~/.agents/skills/unslop`; its standalone
+scanners require Python 3.8+, which the bucket supplies on `PATH`. This belongs
+to the shared `skills` bucket, not the Pi-next wrapper. Upstream reports that its
+writing-quality benchmark has
+not yet met its safety bar, so review suggested edits rather than treating scanner
+success as proof of a safe rewrite.
+
+Microsoft-owned skills
 (`ado-pr-markdown`, `browser-control`, `figma-to-spec`, and `fluent-ui-v9`) and the
 corporate warehouse review skill are not shipped. Consumers provide their own
 source and selection; nix-common does not import the private collection.

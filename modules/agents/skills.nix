@@ -1,7 +1,12 @@
 { ... }:
 {
   flake.modules.homeManager.skills =
-    { config, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       builtinSkills = [
         "writing-skills"
@@ -47,15 +52,26 @@
           sources = {
             nix-common.path = ./_skills;
             matt-pocock.path = builtins.scoped.commonInputs.matt-pocock-skills + "/skills";
+            unslop = {
+              path = builtins.scoped.commonInputs.unslop;
+              # The repository root is the skill; keep its scripts and references together.
+              filter.maxDepth = 0;
+            };
           };
           skills.enable =
-            builtinSkills ++ config.skills.builtinExtra ++ mattPocockSkills ++ config.skills.extra;
+            builtinSkills
+            ++ config.skills.builtinExtra
+            ++ mattPocockSkills
+            ++ [ "unslop" ]
+            ++ config.skills.extra;
           targets.agents = {
             enable = true;
             structure = "link";
             dest = ".agents/skills";
           };
         };
+        # Unslop invokes its stdlib-only scanners with python3.
+        home.packages = [ pkgs.python3 ];
         home.sessionVariables.AGENTS_SKILLS_DIR = "${config.home.homeDirectory}/.agents/skills";
       };
     };
