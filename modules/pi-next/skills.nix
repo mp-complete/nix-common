@@ -13,16 +13,9 @@ let
   };
 in
 {
-  # Extend the shared skills feature; keep upstream skill implementations in
-  # their pinned source rather than copying them into this repository.
-  flake.modules.homeManager.skills.programs.agent-skills = {
-    inherit sources;
-    skills.enableAll = [ "pi-nix-wrapper" ];
-  };
-
-  # Reuse the source and builder without coupling the standalone wrapper to
-  # Home Manager. The shared target resolves to the same canonical skill files,
-  # so Pi can deduplicate ambient discovery after a Home Manager deployment.
+  # Keep the skill inside the wrapper's resources. Importing common must not
+  # add Pi-specific sources or selections to the shared Home Manager skills
+  # bucket; consumers own any separate global skill installation.
   flake.wrappers.pi-next =
     { pkgs, ... }:
     let

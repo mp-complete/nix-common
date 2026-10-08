@@ -2,10 +2,13 @@
 
 ## Baseline
 
-`modules/pi-next/pi.nix` exposes a wrapper and a standalone Home Manager feature
-bucket, both named `pi-next`. Hosts select `"pi-next"` explicitly in their bucket
-list. It is not imported by `ai` or `base`, and does not depend on `pi.enable`,
-desktop or WSL configuration.
+`modules/pi-next/pi.nix` exposes a **wrapper utility**, not an installation
+feature. Use `wrappers.pi-next` (`.wrap` / `.apply`) or the unevaluated
+`wrapperModules.pi-next` to derive a consumer-owned wrapper, then install that
+result explicitly. Common supplies no `pi-next` Home Manager/NixOS bucket,
+standalone `packages.<system>.pi-next`, or public Pi-next overlay. It does not
+add Pi-specific sources to the global `skills` bucket. The base does not depend
+on `pi.enable`, desktop or WSL configuration.
 
 The wrapper imports `pi-nix-wrapper.wrapperModules.pi` and explicitly chooses
 its pinned pi-nix Node runtime (currently Pi 1.0.0). It does not change the
@@ -26,31 +29,39 @@ The wrapper keeps upstream runtime defaults and adds declared resources:
 - The legacy extension registry, extra tool packages and wrapper prompt are
   not imported. Native MCP, codemode, tool-search and llama.cpp remain available
   according to Pi's defaults.
-- `mk-pi-extension` is explicitly loaded from an `agent-skills-nix` bundle,
-  using the same pinned source as the shared Home Manager skills feature.
-  It works without activation or ambient skill discovery; supporting references
-  remain alongside `SKILL.md` in the bundle.
+- `mk-pi-extension` is explicitly loaded from an `agent-skills-nix` bundle
+  sourced from the pinned wrapper input. It works without activation or ambient
+  skill discovery; supporting references remain alongside `SKILL.md`. This does
+  not install the skill globally through Home Manager.
 - Ambient discovery remains enabled, including shared `~/.agents/skills` and
   project resources. A fresh wrapper does not mean a hermetic project.
 - Upstream's offline default and self-update protection remain unchanged.
 
 ## Customization
 
-Consumers can extend the unevaluated wrapper normally:
+Consumers own both their derived wrapper and the installation decision. For
+example, after importing `common.flakeModules.default`, define a consumer module:
 
 ```nix
+{ config, inputs, ... }:
 {
-  flake.wrappers.pi-next = { pkgs, ... }: {
-    offline = false;
+  flake.wrappers.pi-work = { pkgs, ... }: {
+    imports = [ inputs.common.wrapperModules.pi-next ];
+    binName = "pi-work";
     tools.packages = [ pkgs.ripgrep pkgs.jq ];
     skills = [ ./skills/review ];
+  };
+
+  flake.modules.homeManager.work-pi = { pkgs, ... }: {
+    home.packages = [ (config.flake.wrappers.pi-work.wrap { inherit pkgs; }) ];
   };
 }
 ```
 
-Add `"pi-next"` to a host's bucket list to install it. The module can also be
-imported directly as
-`config.flake.modules.homeManager.pi-next`.
+Select the **consumer-defined** `"work-pi"` bucket in a host's `mkHost` call.
+The wrapper framework also exposes the derived `packages.<system>.pi-work`;
+common excludes only its base `pi-next` from automatic package outputs.
+No default Pi-next package or installation is introduced by importing common.
 
 The default `configDir` follows `binName`: renaming the executable to `pi-work`
 selects `${XDG_CONFIG_HOME:-$HOME/.config}/pi-work`. Override `configDir` explicitly
@@ -58,24 +69,49 @@ when retaining an existing profile. Ambient discovery and caller environment
 variables still take precedence as described below.
 
 Resource lists compose additively. Replace a selection with `lib.mkForce` when
-needed, rather than wrapping the already-built `packages.pi-next` executable:
+needed, rather than setting `package` to an already-built wrapper executable:
 
 ```nix
-# After importing common.flakeModules.default, in a consumer module:
+# Extend the consumer-owned wrapper above:
 {
-  flake.wrappers.pi-next = { lib, ... }: {
-    binName = "pi-work";
+  flake.wrappers.pi-work = { lib, ... }: {
     mcpServers = lib.mkForce { }; # No declared remote services.
     # piPackages = lib.mkForce [ ]; # Optional: remove bundled npm resources.
   };
 }
 ```
 
-For a second independent package, use
-`inputs.common.wrappers.pi-next.wrap { inherit pkgs; binName = "pi-review"; }`.
+For direct use from a consumer's Home Manager module (without a new flake
+wrapper declaration), extend and install in one expression:
+
+```nix
+{ inputs, pkgs, ... }:
+{
+  home.packages = [ (inputs.common.wrappers.pi-next.wrap {
+    inherit pkgs;
+    binName = "pi-review";
+    tools.packages = [ pkgs.jq ];
+  }) ];
+}
+```
+
 Both routes re-evaluate the module graph, not a nested shell launcher.
 Common-owned dependencies are captured through `builtins.scoped.commonInputs`;
 consumers do not need to declare a `pi-nix-wrapper` or `agent-skills` input.
+
+### Migrating from the installation bucket
+
+Remove reliance on common's `"pi-next"` bucket and define your own wrapper and
+installation module as above. Keep `binName = "pi-next"` and the existing
+`configDir` if retaining the current executable and state directory; the flake
+wrapper attribute can still have a consumer-specific name. State versions and
+mutable profile files need no migration.
+
+If a consumer separately needs `mk-pi-extension` under `~/.agents/skills`, it must
+own that Home Manager source/selection explicitly. The wrapper itself still
+loads the bundled skill. Tests that previously used
+`overlays.pi-next-extensions` can inspect the wrapper-local package set through
+`(common.wrappers.pi-next.apply { inherit pkgs; }).pkgs.piExtensions`.
 
 ## Exa search MCP
 
@@ -298,8 +334,14 @@ None blocks this minimal integration; these matter when building it out later.
 
 ## Validation
 
-`checks.x86_64-linux.pi-next` evaluates the bucket in standalone Home Manager
-without `ai`, base, desktop or WSL modules. That test environment also includes
+`checks.x86_64-linux.pi-next-api` asserts that only the wrapper/module APIs are
+exported for Pi-next: no base package, installation buckets or public overlay.
+The independent consumer also checks that global skills have no Pi-specific
+source or selection.
+
+`checks.x86_64-linux.pi-next` builds the base through `.wrap`'s module evaluation
+and tests explicit installation in a standalone Home Manager fixture without
+`ai`, base, desktop or WSL modules. That test environment also includes
 the legacy `pi-wsl` package; `checks.x86_64-linux.pi-next-coexistence` builds its
 actual Home Manager package environment to catch collisions between the two
 runtimes. The `pi-next` smoke check runs the real binary in a disposable HOME,
@@ -329,12 +371,13 @@ For untracked dependency/test files, use `path:$PWD` in place of `.` until they
 are tracked; no staging or activation is necessary for those builds.
 Run `nix build .#checks.x86_64-linux.pi-next-coexistence --no-link` to check that
 both Pi packages can be installed together.
-The implementation and its input pin are owned by nix-common. Consumers must
-opt into the `"pi-next"` bucket explicitly; no host selections are made here.
+The implementation and its input pin are owned by nix-common. Consumers extend
+the wrapper and own installation; no host selections are made here.
 The baseline checks in `tests/pi-next/checks.nix` are producer-only, so consumers
 can change resources or rename the executable without inheriting hard-coded
-baseline test expectations. The separate `example` consumer checks extension
-of the wrapper, inherited resources, Home Manager selection, profile isolation, and the
-common-owned skill source without declaring the wrapper's inputs itself.
+baseline test expectations. The separate `example` consumer imports the exported
+wrapper module under its own name, installs it via its own Home Manager bucket,
+and checks inherited resources, profile isolation and the explicitly bundled
+skill without any global Pi skill source or extra dependency inputs.
 Interactive login, authenticated MCP, provider inference and full host builds
 are outside these checks.

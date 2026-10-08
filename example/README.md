@@ -7,6 +7,11 @@ This is a separate flake, not an already-evaluated producer module. It verifies:
 - Downstream contributions to shared buckets and skill sources/selections.
 - Copilot enabled with no SOPS ciphertext/template.
 - A downstream rename of the shared tmux wrapper, exercised by a build check.
+- A consumer-owned Pi wrapper imported from `common.wrapperModules.pi-next`,
+  extended with its own name/skill/prompt/MCP policy and explicitly installed by
+  its own Home Manager bucket. The runtime check loads inherited resources too.
+- No common Pi-next package or installation bucket, and no Pi-specific global
+  skills source/selection. The wrapper still carries `mk-pi-extension` itself.
 
 Run it from the common repository root with `bash tests/validate.sh --build`. Explicit local input overrides avoid Nix 2.26's relative-path ambiguity when evaluating a flake inside a Git subdirectory. The fixture has no separately committed lockfile; its common dependency's committed lock preserves upstream versions.
 

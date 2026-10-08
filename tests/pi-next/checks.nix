@@ -11,7 +11,9 @@ in
   perSystem =
     { config, pkgs, ... }:
     let
-      extensions = (pkgs.extend outer.flake.overlays.pi-next-extensions).piExtensions;
+      base = outer.flake.wrappers.pi-next.apply { inherit pkgs; };
+      wrapper = base.wrapper;
+      extensions = base.pkgs.piExtensions;
       # Keep skill loading independently testable while npm extensions evolve.
       skillsOnly = outer.flake.wrappers.pi-next.wrap {
         inherit pkgs;
@@ -23,18 +25,29 @@ in
       standalone = inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
-          outer.flake.modules.homeManager.pi-next
           {
             home.username = "pi-next-test";
             home.homeDirectory = "/home/pi-next-test";
             home.stateVersion = "24.11";
             # Exercise Home Manager's actual package merge with the legacy Pi.
-            home.packages = [ config.packages.pi-wsl ];
+            home.packages = [
+              wrapper
+              config.packages.pi-wsl
+            ];
           }
         ];
       };
     in
     {
+      checks.pi-next-api =
+        assert outer.flake.wrappers ? pi-next;
+        assert outer.flake.wrapperModules ? pi-next;
+        assert !(config.packages ? pi-next);
+        assert !(outer.flake.modules.homeManager ? pi-next);
+        assert !(outer.flake.modules.nixos ? pi-next);
+        assert !(outer.flake.overlays ? pi-next-extensions);
+        pkgs.writeText "pi-next-wrapper-only" "passed\n";
+
       checks.pi-next-coexistence = standalone.config.home.path;
 
       checks.pi-next-notify = pkgs.runCommand "pi-next-notify" { nativeBuildInputs = [ pkgs.nodejs ]; } ''
@@ -50,9 +63,9 @@ in
           '';
 
       checks.pi-next =
-        assert lib.any (p: p.outPath == config.packages.pi-next.outPath) standalone.config.home.packages;
+        assert lib.any (p: p.outPath == wrapper.outPath) standalone.config.home.packages;
         pkgs.runCommand "pi-next-smoke" { nativeBuildInputs = [ pkgs.jq ]; } ''
-          bash ${./smoke.sh} ${config.packages.pi-next} ${./probe.ts} ${extensions.pi-interactive-shell} ${extensions.pi-notify-official} ${extensions.rpiv-ask-user-question} ${extensions.plannotator} ${extensions.rpiv-todo}
+          bash ${./smoke.sh} ${wrapper} ${./probe.ts} ${extensions.pi-interactive-shell} ${extensions.pi-notify-official} ${extensions.rpiv-ask-user-question} ${extensions.plannotator} ${extensions.rpiv-todo}
           touch "$out"
         '';
     };

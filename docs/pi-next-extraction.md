@@ -4,18 +4,19 @@
 
 This introduces the reusable portion of the work deployment's current
 `pi-next` implementation, including its in-progress extension integrations.
-It is an introduction in common, not a simultaneous consumer cutover.
-The work checkout and its staged/unstaged changes are left intact; a follow-up
-can replace its duplicate definitions with extensions of this shared wrapper.
+The initial extraction has been narrowed to a wrapper-only utility. Consumers
+extend the shared wrapper and own installation. This update does not modify or
+repin any work/personal checkout; their installation modules migrate separately.
 
 | Component reviewed | Decision |
 | --- | --- |
 | Pi runtime, launcher-only package, self-update/offline defaults | Common; preserve the exact upstream input/runtime pins and legacy coexistence |
-| `pi-next` wrapper and standalone Home Manager/NixOS buckets | Common; host selection remains downstream |
+| `pi-next` wrapper/module API | Common; no standalone base package or installation buckets; consumers extend then install |
+| Extension overlay | Private to the wrapper's package set; not exported or applied to a host |
 | Eight pinned npm resource roots and dependency closure | Common; one extension module per resource under `modules/pi-next/extensions/`, all registered resources loaded, additive lists replaceable with `mkForce` |
 | Official notifier | Common; selects its transport at runtime, does not require a WSL bucket |
 | Exa MCP | Common, overridable defaults; public anonymous service, not a corporate integration; requests disclose queries/URLs to a third party |
-| `mk-pi-extension` skill bundle and shared skills source | Common; source stays in the pinned upstream input, no copied skill implementation |
+| `mk-pi-extension` skill bundle | Common wrapper resource only; any global Home Manager skill installation is consumer-owned |
 | Resource-loading, native-library, mocked-notification and coexistence checks | Common; baseline checks are producer-only, with a separate customized consumer check |
 | Work-local install skill and `/add-pi-extension` prompt | Stay downstream; contain checkout-specific ownership and workflow instructions, not global Pi resources |
 | Microsoft/private skills and work-specific validation | Stay downstream; no private source or reverse dependency is added |
@@ -26,10 +27,17 @@ can replace its duplicate definitions with extensions of this shared wrapper.
 
 Common inputs are lexically captured with `builtins.scoped.commonInputs`, as
 in the existing modules. Shared wrapper configuration remains unevaluated in
-the consumer's flake-parts graph. The future work layer should extend
-`flake.wrappers.pi-next` after importing `common.flakeModules.default`, not set
-`package` to the built common wrapper or replace module registries with `//`.
-A separately named package can use `common.wrappers.pi-next.wrap` directly.
+the consumer's flake-parts graph. Consumers define a wrapper under their own name
+with `imports = [ common.wrapperModules.pi-next ];`, then explicitly install its
+`.wrap { inherit pkgs; }` result. They can also extend/install directly through
+`common.wrappers.pi-next.wrap`. Never set `package` to a built wrapper or replace
+module registries with `//`.
+
+Common excludes the base from automatic package outputs, supplies no Pi-next
+NixOS/Home Manager buckets, and does not extend the global `skills` bucket with
+Pi-specific sources. The extension overlay applies only inside wrapper evaluation.
+This deliberately changes the initial extraction's installation API; see the
+migration section in `pi-next.md`.
 
 The original `pi-next` executable/profile defaults are unchanged. Renamed
 wrappers now default to their own `${XDG_CONFIG_HOME:-$HOME/.config}/<binName>`
@@ -49,30 +57,31 @@ other architecture support from upstream prebuilds.
 
 ## Validation contract
 
-- Build `packages.x86_64-linux.pi-next` and the four `pi-next*` baseline checks.
+- Build the four baseline `pi-next*` checks and `pi-next-api`, which rejects
+  standalone base packages, installation buckets and public overlay exports.
 - Evaluate the separate `example#consumerContract` and build its
   `checks.x86_64-linux.consumer-pi`, with the local common input override shown
   in `tests/validate.sh`. The fixture declares no Pi/skills dependency inputs
-  and extends the base with its own name, explicit skill, prompt and MCP policy
-  while retaining the common resources.
+  and derives a wrapper with its own name, explicit skill, prompt and MCP policy.
+  It installs through its own bucket, retains common resources inside the wrapper,
+  and rejects Pi-specific global skill sources/selections.
 - Run the source-boundary check and `nix flake check --no-build`.
 - No activation, provider inference, delegated jobs, live PTYs, browser reviews,
   authentication helpers or real notification delivery are part of validation.
 
 ## Validation results
 
-Validated on x86_64-linux after the per-extension registry split and removal of
-per-entry enable switches:
+Validated on x86_64-linux after narrowing the public API to the wrapper utility:
 
-- `packages.x86_64-linux.pi-next` and all four baseline `pi-next*` checks passed.
+- All four baseline `pi-next*` checks and the new `pi-next-api` check passed.
 - `bash tests/validate.sh --build` passed: source boundaries, independent consumer
   contract, flake evaluation, existing local extension tests, consumer wrapper
   builds, and the legacy Pi-agent/Edge bootstrap build checks.
 - The customized consumer loaded its own skill and prompt, used its renamed XDG
   profile, registered no MCP servers, and retained the common skill and
   extensions, including Plannotator.
-- Nix formatting and Git whitespace checks passed. Existing common input pins
-  were unchanged; the added Pi dependency graph matches the work source pins.
+- Nix formatting and Git whitespace checks passed. No input, runtime or extension
+  pins changed in this wrapper-only update.
 
 Builds may reuse valid local/cache outputs. No full host activation or interactive
 behavior is claimed; the integration notes list the remaining runtime limits.

@@ -15,6 +15,7 @@ if [[ ${1:-} == --build ]]; then
     ./example#checks.x86_64-linux.consumer-pi "${consumer_args[@]}" --no-link
   nix build .#checks.x86_64-linux.pi-agent-eval \
     .#checks.x86_64-linux.edge-cdp-bootstrap \
+    .#checks.x86_64-linux.pi-next-api \
     .#checks.x86_64-linux.pi-next \
     .#checks.x86_64-linux.pi-next-skills \
     .#checks.x86_64-linux.pi-next-notify \
