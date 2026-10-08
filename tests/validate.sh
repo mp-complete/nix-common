@@ -11,7 +11,12 @@ nix flake check --no-build --no-write-lock-file
 node --test modules/ai/extensions/_local/pi-scan-guard/test/*.test.mjs \
   modules/ai/extensions/_local/agent-browser-edge-bridge/test/*.test.mjs
 if [[ ${1:-} == --build ]]; then
-  nix build ./example#checks.x86_64-linux.consumer-wrapper "${consumer_args[@]}" --no-link
+  nix build ./example#checks.x86_64-linux.consumer-wrapper \
+    ./example#checks.x86_64-linux.consumer-pi "${consumer_args[@]}" --no-link
   nix build .#checks.x86_64-linux.pi-agent-eval \
-    .#checks.x86_64-linux.edge-cdp-bootstrap --no-link --no-write-lock-file
+    .#checks.x86_64-linux.edge-cdp-bootstrap \
+    .#checks.x86_64-linux.pi-next \
+    .#checks.x86_64-linux.pi-next-skills \
+    .#checks.x86_64-linux.pi-next-notify \
+    .#checks.x86_64-linux.pi-next-coexistence --no-link --no-write-lock-file
 fi

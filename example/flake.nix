@@ -41,6 +41,12 @@
           programs.agent-skills.sources.consumer.path = inputs.consumer-data + "/skills";
         };
         flake.wrappers.tmux.binName = "consumer-tmux";
+        flake.wrappers.pi-next = { lib, ... }: {
+          binName = "consumer-pi";
+          skills = [ (inputs.consumer-data + "/skills") ];
+          appendSystemPrompts = [ "Independent consumer instructions." ];
+          mcpServers = lib.mkForce { };
+        };
 
         flake.nixosConfigurations.fixture = mkHost {
           buckets = [
@@ -48,6 +54,7 @@
             "dev"
             "ai"
             "skills"
+            "pi-next"
           ];
           modules = [
             {
@@ -97,6 +104,10 @@
           assert h.sops.secrets == { };
           assert h.sops.templates == { };
           assert copilot != null;
+          assert skills.catalog.mk-pi-extension.source == "pi-nix-wrapper";
+          assert
+            toString skills.sources.pi-nix-wrapper.path == toString inputs.nix-common.inputs.pi-nix-wrapper;
+          assert lib.elem "pi-nix-wrapper" skills.skills.enableAll;
           {
             passed = true;
             copilotDerivation = copilot.drvPath;
@@ -106,6 +117,10 @@
         perSystem = { config, pkgs, ... }: {
           checks.consumer-wrapper = pkgs.runCommand "consumer-wrapper" { } ''
             ${config.packages.tmux}/bin/consumer-tmux -V | grep tmux
+            touch "$out"
+          '';
+          checks.consumer-pi = pkgs.runCommand "consumer-pi" { nativeBuildInputs = [ pkgs.jq ]; } ''
+            bash ${../tests/pi-next/consumer.sh} ${config.packages.pi-next} ${../tests/pi-next/probe.ts}
             touch "$out"
           '';
         };
