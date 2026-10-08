@@ -41,11 +41,16 @@
           programs.agent-skills.sources.consumer.path = inputs.consumer-data + "/skills";
         };
         flake.wrappers.tmux.binName = "consumer-tmux";
-        flake.wrappers.pi-next = { lib, ... }: {
+        # Own both the derived wrapper and its installation bucket downstream.
+        flake.wrappers.consumer-pi = { lib, ... }: {
+          imports = [ inputs.nix-common.wrapperModules.pi-next ];
           binName = "consumer-pi";
           skills = [ (inputs.consumer-data + "/skills") ];
           appendSystemPrompts = [ "Independent consumer instructions." ];
           mcpServers = lib.mkForce { };
+        };
+        flake.modules.homeManager.consumer-pi = { pkgs, ... }: {
+          home.packages = [ (config.flake.wrappers.consumer-pi.wrap { inherit pkgs; }) ];
         };
 
         flake.nixosConfigurations.fixture = mkHost {
@@ -54,7 +59,7 @@
             "dev"
             "ai"
             "skills"
-            "pi-next"
+            "consumer-pi"
           ];
           modules = [
             {
@@ -104,10 +109,17 @@
           assert h.sops.secrets == { };
           assert h.sops.templates == { };
           assert copilot != null;
-          assert skills.catalog.mk-pi-extension.source == "pi-nix-wrapper";
-          assert
-            toString skills.sources.pi-nix-wrapper.path == toString inputs.nix-common.inputs.pi-nix-wrapper;
-          assert lib.elem "pi-nix-wrapper" skills.skills.enableAll;
+          assert !(skills.sources ? pi-nix-wrapper);
+          assert !(skills.catalog ? mk-pi-extension);
+          assert skills.skills.enableAll == false;
+          assert !(config.flake.modules.homeManager ? pi-next);
+          assert !(config.flake.modules.nixos ? pi-next);
+          assert lib.any (
+            p:
+            p.outPath == (config.flake.wrappers.consumer-pi.wrap {
+              pkgs = config.flake.nixosConfigurations.fixture.pkgs;
+            }).outPath
+          ) h.home.packages;
           {
             passed = true;
             copilotDerivation = copilot.drvPath;
@@ -119,10 +131,12 @@
             ${config.packages.tmux}/bin/consumer-tmux -V | grep tmux
             touch "$out"
           '';
-          checks.consumer-pi = pkgs.runCommand "consumer-pi" { nativeBuildInputs = [ pkgs.jq ]; } ''
-            bash ${../tests/pi-next/consumer.sh} ${config.packages.pi-next} ${../tests/pi-next/probe.ts}
-            touch "$out"
-          '';
+          checks.consumer-pi =
+            assert !(config.packages ? pi-next);
+            pkgs.runCommand "consumer-pi" { nativeBuildInputs = [ pkgs.jq ]; } ''
+              bash ${../tests/pi-next/consumer.sh} ${config.packages.consumer-pi} ${../tests/pi-next/probe.ts}
+              touch "$out"
+            '';
         };
       }
     );

@@ -1,6 +1,5 @@
-{ config, ... }:
+{ lib, ... }:
 let
-  outer = config;
   upstream = builtins.scoped.commonInputs.pi-nix-wrapper;
 in
 {
@@ -33,11 +32,11 @@ in
       };
     };
 
-  # A standalone feature bucket: usable without ai, desktop, WSL or base.
-  flake.modules.homeManager.pi-next =
-    { pkgs, ... }:
-    {
-      home.packages = [ (outer.flake.wrappers.pi-next.wrap { inherit pkgs; }) ];
-    };
-
+  # Export the base wrapper/module, not an automatically built package or
+  # installation bucket. Consumers extend it under their own wrapper name and
+  # choose how to install the result. Other wrappers keep their existing exports.
+  perSystem = { config, ... }: {
+    # In exclude mode true omits it; in build mode false leaves it unselected.
+    wrappers.packages.pi-next = lib.mkDefault (config.wrappers.control_type == "exclude");
+  };
 }

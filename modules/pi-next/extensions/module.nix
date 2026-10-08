@@ -36,8 +36,6 @@ in
   };
 
   config = {
-    flake.overlays.pi-next-extensions = overlay;
-
     # Only extend this wrapper's package set, preserving the legacy wrappers.
     # Also works when .wrap receives bare standalone Home Manager pkgs.
     flake.wrappers.pi-next = { pkgs, ... }: {
@@ -47,7 +45,5 @@ in
       config.piPackages = resources "package" pkgs;
       config.extensions = resources "extension" pkgs;
     };
-
-    flake.modules.nixos.pi-next.nixpkgs.overlays = [ overlay ];
   };
 }
