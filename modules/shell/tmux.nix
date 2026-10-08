@@ -47,7 +47,15 @@ in
       modeKeys = "vi";
 
       plugins = with pkgs.tmuxPlugins; [
-        { plugin = yank; }
+        {
+          plugin = yank;
+          configBefore = ''
+            # WSLg's Wayland clipboard preserves UTF-8; tmux-yank otherwise
+            # auto-detects clip.exe under WSL and pipes text through its
+            # console-code-page decoder.
+            set -g @override_copy_command '${pkgs.wl-clipboard}/bin/wl-copy'
+          '';
+        }
         { plugin = pain-control; }
         { plugin = extrakto; }
         { plugin = tmux-fzf; }
@@ -84,6 +92,10 @@ in
       # rebinds L to resize-pane -R). Everything custom therefore lives in
       # configAfter, where it reliably wins.
       configAfter = ''
+        # Keep tmux-owned copies flowing to the outer terminal while rejecting
+        # application-originated OSC 52 writes from panes.
+        set -s set-clipboard external
+
         # Re-bind prefix-a to send-prefix so it still reaches the inner app
         bind -N "Send the prefix key through to the application" a send-prefix
 
