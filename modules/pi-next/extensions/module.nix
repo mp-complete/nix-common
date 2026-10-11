@@ -43,7 +43,7 @@ in
         };
         config.piPackages = resources "package" pkgs;
         config.extensions = resources "extension" pkgs;
-      };
+      }
     );
   };
 }
