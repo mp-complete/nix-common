@@ -36,14 +36,14 @@ in
   };
 
   config = {
-    # Only extend this wrapper's package set, preserving the legacy wrappers.
-    # Also works when .wrap receives bare standalone Home Manager pkgs.
-    flake.wrappers.pi-next = { pkgs, ... }: {
-      options.pkgs = lib.mkOption {
-        apply = pkgs: pkgs.extend overlay;
+    flake.wrappers = lib.genAttrs [ "pi-next" "pi-coding-agent" ] (
+      _: { pkgs, ... }: {
+        options.pkgs = lib.mkOption {
+          apply = pkgs: pkgs.extend overlay;
+        };
+        config.piPackages = resources "package" pkgs;
+        config.extensions = resources "extension" pkgs;
       };
-      config.piPackages = resources "package" pkgs;
-      config.extensions = resources "extension" pkgs;
-    };
+    );
   };
 }

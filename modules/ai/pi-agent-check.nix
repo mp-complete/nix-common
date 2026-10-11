@@ -28,8 +28,7 @@
           (
             { lib, ... }:
             {
-              # perSystem `pkgs` already carries the overlays that hosts get
-              # via the `base` bucket (modules/flake/package-set.nix).
+              # Use the same package set as the surrounding per-system checks.
               nixpkgs.pkgs = pkgs;
               # Skips bootloader/fileSystems requirements; we never build the
               # toplevel, only the units.

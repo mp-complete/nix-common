@@ -11,12 +11,7 @@ let
     catalog = skillLib.discoverCatalog sources;
     allowlist = [ "mk-pi-extension" ];
   };
-in
-{
-  # Keep the skill inside the wrapper's resources. Importing common must not
-  # add Pi-specific sources or selections to the shared Home Manager skills
-  # bucket; consumers own any separate global skill installation.
-  flake.wrappers.pi-next =
+  wrapper =
     { pkgs, ... }:
     let
       bundle = skillLib.mkBundle { inherit pkgs selection; };
@@ -24,4 +19,11 @@ in
     {
       skills = [ (bundle.forTarget "pi") ];
     };
+in
+{
+  # Keep the skill inside the wrapper's resources. Importing common must not
+  # add Pi-specific sources or selections to the shared Home Manager skills
+  # bucket; consumers own any separate global skill installation.
+  flake.wrappers.pi-next = wrapper;
+  flake.wrappers.pi-coding-agent = wrapper;
 }

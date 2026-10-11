@@ -78,7 +78,7 @@ in
         extraExtensions = lib.mkOption {
           type = lib.types.listOf lib.types.path;
           default = [ ];
-          description = "Extra `--extension` paths on top of the pi-daemon wrapper's set.";
+          description = "Extra `--extension` paths on top of the pi-coding-agent wrapper's set.";
         };
         skills = lib.mkOption {
           type = lib.types.listOf lib.types.path;
@@ -350,12 +350,10 @@ in
       options.piAgent = {
         package = lib.mkOption {
           type = lib.types.package;
-          default = outer.flake.wrappers.pi-daemon.wrap { inherit pkgs; };
-          defaultText = lib.literalExpression "flake.wrappers.pi-daemon";
+          default = outer.flake.wrappers.pi-coding-agent.wrap { inherit pkgs; };
+          defaultText = lib.literalExpression "flake.wrappers.pi-coding-agent";
           description = ''
-            The pi used by every job. Defaults to the headless `pi-daemon`
-            wrapper, which excludes every extension that can block on human
-            input.
+            The pi used by every job. Defaults to the `pi-coding-agent` wrapper.
           '';
         };
 
