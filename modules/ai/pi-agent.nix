@@ -13,10 +13,7 @@
 # One interactive bootstrap per host is required before the first run:
 # `pi-agent-login` (the daemon holds its OWN OAuth grant — see the Auth note
 # on `piAgent.package` below).
-{ config, ... }:
-let
-  outer = config;
-in
+{ ... }:
 {
   flake.modules.nixos.pi-agent =
     {
@@ -78,7 +75,7 @@ in
         extraExtensions = lib.mkOption {
           type = lib.types.listOf lib.types.path;
           default = [ ];
-          description = "Extra `--extension` paths on top of the pi-coding-agent wrapper's set.";
+          description = "Additional `--extension` paths passed to pi for each job.";
         };
         skills = lib.mkOption {
           type = lib.types.listOf lib.types.path;
@@ -350,23 +347,10 @@ in
       options.piAgent = {
         package = lib.mkOption {
           type = lib.types.package;
-          default = outer.flake.wrappers.pi-coding-agent.wrap {
-            inherit pkgs;
-            piPackages = lib.mkForce [ ];
-            extensions = lib.mkForce [ ];
-          };
-          defaultText = lib.literalExpression ''
-            flake.wrappers.pi-coding-agent.wrap {
-              inherit pkgs;
-              piPackages = lib.mkForce [ ];
-              extensions = lib.mkForce [ ];
-            }
-          '';
           description = ''
-            The pi used by every job. Defaults to the `pi-coding-agent` wrapper
-            without interactive packages or extensions, which could block an
-            unattended run. Add non-interactive extensions per job with
-            `extraExtensions`.
+            The package used by every job. Callers must configure it explicitly,
+            and it must provide the `pi` executable. Add non-interactive
+            extensions per job with `extraExtensions`.
           '';
         };
 

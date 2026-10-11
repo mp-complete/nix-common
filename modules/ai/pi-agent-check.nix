@@ -36,6 +36,9 @@
               system.stateVersion = "25.05";
               sops.age.keyFile = "/etc/nixos/keys.txt";
 
+              # The daemon does not select a pi wrapper; callers provide it.
+              piAgent.package = pkgs.writeShellScriptBin "pi" "exit 0";
+
               # Exercise a repository-backed job without consumer secrets.
               piAgent.jobs.common-docs = {
                 description = "pi-agent eval repository sample";
