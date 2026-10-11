@@ -12,6 +12,7 @@ in
     { config, pkgs, ... }:
     let
       base = outer.flake.wrappers.pi-next.apply { inherit pkgs; };
+      codingAgent = outer.flake.wrappers.pi-coding-agent.apply { inherit pkgs; };
       wrapper = base.wrapper;
       extensions = base.pkgs.piExtensions;
       # Keep skill loading independently testable while npm extensions evolve.
@@ -29,7 +30,7 @@ in
             home.username = "pi-next-test";
             home.homeDirectory = "/home/pi-next-test";
             home.stateVersion = "24.11";
-            # Exercise Home Manager's actual package merge with the legacy Pi.
+            # Exercise Home Manager's actual package merge.
             home.packages = [
               wrapper
             ];
@@ -41,9 +42,15 @@ in
       checks.pi-next-api =
         assert outer.flake.wrappers ? pi-next;
         assert outer.flake.wrapperModules ? pi-next;
+        assert outer.flake.wrappers ? pi-coding-agent;
+        assert outer.flake.wrapperModules ? pi-coding-agent;
+        assert codingAgent.wrapper.outPath == wrapper.outPath;
         assert !(config.packages ? pi-next);
+        assert !(config.packages ? pi-coding-agent);
         assert !(outer.flake.modules.homeManager ? pi-next);
+        assert !(outer.flake.modules.homeManager ? pi-coding-agent);
         assert !(outer.flake.modules.nixos ? pi-next);
+        assert !(outer.flake.modules.nixos ? pi-coding-agent);
         assert !(outer.flake.overlays ? pi-next-extensions);
         pkgs.writeText "pi-next-wrapper-only" "passed\n";
 
