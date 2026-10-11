@@ -350,10 +350,23 @@ in
       options.piAgent = {
         package = lib.mkOption {
           type = lib.types.package;
-          default = outer.flake.wrappers.pi-coding-agent.wrap { inherit pkgs; };
-          defaultText = lib.literalExpression "flake.wrappers.pi-coding-agent";
+          default = outer.flake.wrappers.pi-coding-agent.wrap {
+            inherit pkgs;
+            piPackages = lib.mkForce [ ];
+            extensions = lib.mkForce [ ];
+          };
+          defaultText = lib.literalExpression ''
+            flake.wrappers.pi-coding-agent.wrap {
+              inherit pkgs;
+              piPackages = lib.mkForce [ ];
+              extensions = lib.mkForce [ ];
+            }
+          '';
           description = ''
-            The pi used by every job. Defaults to the `pi-coding-agent` wrapper.
+            The pi used by every job. Defaults to the `pi-coding-agent` wrapper
+            without interactive packages or extensions, which could block an
+            unattended run. Add non-interactive extensions per job with
+            `extraExtensions`.
           '';
         };
 
