@@ -8,6 +8,9 @@ notify="$4"
 export PI_NEXT_QUESTION_PACKAGE="$5"
 export PI_NEXT_PLANNOTATOR_PACKAGE="$6"
 export PI_NEXT_TODO_PACKAGE="$7"
+# Older consumers pass seven package arguments. They still check browser tool
+# registration; the producer always passes the eighth for lifecycle coverage.
+export PI_NEXT_CHROME_PACKAGE="${8:-}"
 export HOME="$TMPDIR/home with spaces"
 mkdir -p "$HOME" "$TMPDIR/project"
 cd "$TMPDIR/project"
@@ -59,6 +62,7 @@ jq -e --arg dir "$HOME/.config/pi-next" '
   and .questionnaire == {lazyLoaded: true, headlessHidden: true, interactiveRestored: true}
   and .plannotatorNative == true
   and .todoUiLoaded == true
+  and (env.PI_NEXT_CHROME_PACKAGE == "" or .chromeLifecycle == true)
   and (.appendedPrompt // "") == ""
   and (.mcpServers | length) == 1
   and .mcpServers[0].name == "exa"
@@ -73,6 +77,8 @@ jq -e --arg dir "$HOME/.config/pi-next" '
   and (["powerline", "btw", "look-pack", "spawn", "attach", "dismiss"] - .commands == [])
   and (.commands | index("todos") != null)
   and (.tools | index("todo") != null)
+  and (.tools | index("browser_execute") != null)
+  and (.activeTools | index("browser_execute") != null)
   and (.activeTools | index("todo") != null)
   and (.tools | index("ask_user_question") != null)
   and (.commands | index("languages") == null)
@@ -89,7 +95,7 @@ jq -e --arg dir "$HOME/.config/pi-next" '
   and (["subagent", "subagents_enable", "subagent_supervisor", "bg_wait"] - .tools == [])
   # Subagents selects the loader or delegation tool according to model support.
   and (.activeTools | index("subagent") != null or index("subagents_enable") != null)
-  and (.activeTools - ["subagent", "subagents_enable", "subagent_supervisor", "bg_wait", "interactive_shell", "ask_user_question", "todo"]) == [
+  and (.activeTools - ["subagent", "subagents_enable", "subagent_supervisor", "bg_wait", "interactive_shell", "ask_user_question", "todo", "browser_execute"]) == [
     "bash", "edit", "read", "write"
   ]
   and (.commands | index("mcp-adapter") == null)

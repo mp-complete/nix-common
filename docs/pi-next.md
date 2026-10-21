@@ -165,6 +165,7 @@ The current package pins are:
 | --- | --- | --- |
 | `pi-powerline-footer` | 0.19.1 | Powerline footer extension |
 | `pi-btw` | 0.7.1 | Side-conversation extension and `btw` skill |
+| `pi-chrome-use` | 1.1.1 | On-demand `browser_execute` CDP tool |
 | `awesome-pi-themes` | 1.2.19 | Theme collection and `look-pack` extension |
 | `pi-subagents` | 0.76.1 | Delegation extension, two skills, and six workflow prompts |
 | `pi-interactive-shell` | 0.17.0 | PTY shell tool, spawn/attach/dismiss commands, and `pi-interactive-shell` skill |
@@ -212,6 +213,31 @@ not a sandbox. For long quiet builds, disable dispatch quiet auto-close and
 require actual process-exit evidence before reporting success. Interactive PTYs,
 cancellation, overlays and monitoring remain untested;
 validation only loads resources and the native library, without opening a PTY.
+
+### CDP browser execution
+
+`pi-chrome-use` 1.1.1 restores the generic `browser_execute` tool to this
+registry. It has no runtime dependencies beyond Pi-provided peers; the full
+package root preserves its relative TypeScript imports. Registration does not
+launch a browser, discover profiles, or open a socket. Browser startup and
+endpoint selection remain consumer-owned; no WSL bridge is restored here.
+
+The source patch uses Pi 1.0's `ctx.sessionManager.getSessionId()` rather than
+falling back to a working-directory key, evicts/closes that session on
+`session_shutdown`, and clears the execution watchdog on success or failure.
+The smoke probe exercises the real tool with fake contexts sharing one cwd,
+asserting state isolation, persistence, idempotent cleanup, and timer cleanup
+on success, exception, and timeout. It does not connect to a browser.
+
+For a running authorized browser, fetch its `/json/version` endpoint and pass
+`webSocketDebuggerUrl` to `session.connect({ wsUrl })`. Upstream `BU_CDP_WS`
+and `BU_CDP_URL` both expect a **WebSocket URL**, not an HTTP discovery URL.
+Do not pin a browser-instance WebSocket URL in Nix: it changes on restart.
+After a disconnect, close the old session connection and rediscover the URL;
+automatic reconnect is not supplied. A timeout rejects the tool call but does
+not cancel arbitrary JavaScript that is still running. This tool executes code
+with Pi's OS permissions and can control the authenticated browser; it is not
+a sandbox or a read-only browsing interface.
 
 ### Official completion notifications
 

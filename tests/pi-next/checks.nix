@@ -64,7 +64,7 @@ in
       checks.pi-next =
         assert lib.any (p: p.outPath == wrapper.outPath) standalone.config.home.packages;
         pkgs.runCommand "pi-next-smoke" { nativeBuildInputs = [ pkgs.jq ]; } ''
-          bash ${./smoke.sh} ${wrapper} ${./probe.ts} ${extensions.pi-interactive-shell} ${extensions.pi-notify-official} ${extensions.rpiv-ask-user-question} ${extensions.plannotator} ${extensions.rpiv-todo}
+          bash ${./smoke.sh} ${wrapper} ${./probe.ts} ${extensions.pi-interactive-shell} ${extensions.pi-notify-official} ${extensions.rpiv-ask-user-question} ${extensions.plannotator} ${extensions.rpiv-todo} ${extensions.pi-chrome-use}
           touch "$out"
         '';
     };

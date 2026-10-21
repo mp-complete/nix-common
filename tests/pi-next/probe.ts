@@ -1,4 +1,5 @@
 import { writeFileSync } from "node:fs";
+import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { getAgentDir, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -47,6 +48,67 @@ export default function (pi: ExtensionAPI) {
         const pty = require("node-pty");
         plannotatorNative = typeof pty.spawn === "function" && typeof pty.open === "function";
       }
+      let chromeLifecycle;
+      if (process.env.PI_NEXT_CHROME_PACKAGE) {
+        const root = process.env.PI_NEXT_CHROME_PACKAGE;
+        const { default: register } = await import(pathToFileURL(`${root}/extensions/browser-execute.ts`).href);
+        const { SessionStore } = await import(pathToFileURL(`${root}/src/session-store.ts`).href);
+        const handlers = new Map();
+        let tool;
+        register({ registerTool: (value) => { tool = value; }, on: (name, handler) => handlers.set(name, handler) });
+        assert.equal(tool.name, "browser_execute");
+        assert.equal(typeof handlers.get("session_shutdown"), "function");
+        // Exercise the actual tool with Pi's documented context, not legacy
+        // sessionId fields. Never connect a socket or read a browser profile.
+        const a = { cwd: ctx.cwd, sessionManager: { getSessionId: () => "chrome-test-a" } };
+        const b = { cwd: ctx.cwd, sessionManager: { getSessionId: () => "chrome-test-b" } };
+        const run = async (context) => {
+          const result = await tool.execute("test", {
+            code: "session.testCount = (session.testCount ?? 0) + 1; return session.testCount;",
+            description: "Test isolated session state",
+          }, undefined, undefined, context);
+          return result.details.result;
+        };
+        // Instrument only the tool call's watchdog. This catches both retained
+        // success timers and error paths without waiting a minute to exit.
+        const originalSetTimeout = globalThis.setTimeout;
+        const originalClearTimeout = globalThis.clearTimeout;
+        const timers = new Set();
+        globalThis.setTimeout = ((...args) => {
+          const timer = originalSetTimeout(...args);
+          timers.add(timer);
+          return timer;
+        }) as typeof setTimeout;
+        globalThis.clearTimeout = ((timer) => {
+          timers.delete(timer);
+          return originalClearTimeout(timer);
+        }) as typeof clearTimeout;
+        try {
+          assert.equal(await run(a), "1");
+          assert.equal(timers.size, 0, "success must clear watchdog");
+          for (const code of ["throw new Error('fixture failure')", "await new Promise(() => {})"]) {
+            await assert.rejects(tool.execute("test", { code, description: "Test watchdog cleanup", timeout: 1 },
+              undefined, undefined, a), /fixture failure|timed out/);
+            assert.equal(timers.size, 0, "failure must clear watchdog");
+          }
+        } finally {
+          globalThis.setTimeout = originalSetTimeout;
+          globalThis.clearTimeout = originalClearTimeout;
+          for (const timer of timers) originalClearTimeout(timer);
+        }
+        assert.equal(await run(a), "2");
+        assert.equal(await run(b), "1", "same cwd must not share browser state");
+        let closed = 0;
+        SessionStore.get("chrome-test-a").close = () => { closed++; };
+        await handlers.get("session_shutdown")({}, a);
+        await handlers.get("session_shutdown")({}, a);
+        assert.equal(closed, 1, "shutdown closes exactly once");
+        assert.equal(await run(a), "1", "shutdown evicts the session");
+        assert.equal(await run(b), "2", "other sessions survive shutdown");
+        await handlers.get("session_shutdown")({}, a);
+        await handlers.get("session_shutdown")({}, b);
+        chromeLifecycle = true;
+      }
       // Print mode redirects extension stdout to stderr; keep diagnostics
       // separate so the smoke test can reject even non-fatal loader errors.
       writeFileSync(process.env.PI_NEXT_PROBE_RESULT!, JSON.stringify({
@@ -55,6 +117,7 @@ export default function (pi: ExtensionAPI) {
         questionnaire,
         plannotatorNative,
         todoUiLoaded,
+        chromeLifecycle,
         offline: process.env.PI_OFFLINE,
         mcpServers: pi.getMcpServers(),
         skills: (options.skills ?? []).map((skill) => skill.name).sort(),
