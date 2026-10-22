@@ -216,8 +216,8 @@ These hold across every report. Re-read
   palette, type stack, semantic state colors, spacing, when to use
   which.
 - [`references/provenance.md`](references/provenance.md) — how to wire
-  findings to evidence, source id conventions, screenshot capture via
-  the `browser-control` skill.
+  findings to evidence, source id conventions, and screenshots from
+  consumer-provided browser tools.
 - [`references/viz.md`](references/viz.md) — when to use inline SVG
   vs Vega-Lite vs nothing; copy-pasteable Vega-Lite specs for the
   common analytical chart types.

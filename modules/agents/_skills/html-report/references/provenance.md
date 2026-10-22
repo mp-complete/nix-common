@@ -86,27 +86,15 @@ travels with `index.html`:
 }
 ```
 
-For authenticated pages, use an authorized browser tool or a separately
-installed `browser-control` skill. The skill is not bundled with `html-report`.
-If it is installed, read `$AGENTS_SKILLS_DIR/browser-control/SKILL.md` first;
-do not assume a sibling source directory exists. If no suitable browser tool or
-skill is available, ask the user for a screenshot rather than installing or
-configuring authentication implicitly.
+For authenticated pages, use a browser tool or skill supplied by the consumer.
+Read its current instructions before capturing the requested page; do not assume
+a particular CLI, browser, profile, bootstrap script, or authentication workflow.
+Browser lifecycle and concurrent-tab coordination belong to that tool, not this
+report skill.
 
-For the optional installed skill:
-
-```bash
-test -r "$AGENTS_SKILLS_DIR/browser-control/SKILL.md" || exit 1
-CDP_URL=$(bash "$AGENTS_SKILLS_DIR/browser-control/scripts/bootstrap.sh" | tail -n1)
-python3 "$AGENTS_SKILLS_DIR/browser-control/scripts/capture_page.py" \
-  --match "grafana.example.com" \
-  --out-dir /tmp/shots --name grafana-p99 \
-  --cdp-url "$CDP_URL"
-```
-
-Then add the resulting `.png` to `dataFiles` and a source entry.
-`browser-control` is *not* a hard dependency of `html-report` — only
-load it when a report genuinely needs an authenticated screenshot.
+Add the resulting `.png` to `dataFiles` and a source entry. Browser tooling is
+optional: if none is available, ask the user for a screenshot rather than
+installing or configuring a browser or authentication implicitly.
 
 ## Wiring findings to sources
 

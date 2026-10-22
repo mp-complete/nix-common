@@ -130,9 +130,11 @@ source and selection; nix-common does not import the private collection.
 When migrating from older pins, supply these skills from the consumer source.
 Any existing `skills.extra = [ "figma-to-spec" "fluent-ui-v9" ];` selection also
 needs those names registered in `skills.availableExtra`, or can be replaced with
-source-level `programs.agent-skills.skills.enableAll` in the consumer. Removing
-the bundled `browser-control` skill does not remove the separate Pi Edge CDP
-extension. `html-report` can use an installed browser skill optionally.
+source-level `programs.agent-skills.skills.enableAll` in the consumer.
+Browser-agent tooling, CDP startup, and browser skills are consumer-owned; common
+does not register a browser-agent extension. The generic `playwright` dev-shell
+aspect still supplies Linux libraries for project tests. `html-report` can use
+an independently installed browser tool without assuming its implementation.
 
 Common-owned dependency inputs are captured lexically by the pinned `import-tree.addScoped` facility. Shared **configuration** still evaluates inside the consumer's flake-parts graph, so downstream identities, bucket additions and wrapper changes are not frozen to producer defaults. Ordinary `inputs` in downstream NixOS/Home Manager modules refers to the consumer's inputs, including private ones.
 
