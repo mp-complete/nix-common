@@ -212,9 +212,9 @@ in
         # prefix-x kills the pane without the y/n prompt.
         bind x kill-pane
 
-        bind C-n display-popup -E -w 20% "wt switch --no-cd -x \'sesh connect {{ worktree_path }}\' -c \"$(
+        bind C-n display-popup -E -w 20% "wt switch --no-cd -x sesh -c \"$(
           gum input --placeholder 'New branch name' --height 10
-        )\""
+        )\" -- connect '{{ worktree_path }}'"
 
         # smart-splits.nvim integration: seamless nav + resize between
         # tmux panes and nvim splits. Forwards C-hjkl / M-hjkl to nvim
