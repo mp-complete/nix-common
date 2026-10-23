@@ -40,7 +40,14 @@
           skills.extra = [ "consumer-skill" ];
           programs.agent-skills.sources.consumer.path = inputs.consumer-data + "/skills";
         };
-        flake.wrappers.tmux.binName = "consumer-tmux";
+        flake.wrappers.consumer-tmux = { lib, ... }: {
+          imports = [ inputs.nix-common.wrapperModules.my-tmux ];
+          binName = "consumer-tmux";
+          prefix = lib.mkForce "C-b";
+        };
+        flake.modules.homeManager.consumer-tmux = { pkgs, ... }: {
+          home.packages = [ (config.flake.wrappers.consumer-tmux.wrap { inherit pkgs; }) ];
+        };
         # Own both the derived wrapper and its installation bucket downstream.
         flake.wrappers.consumer-pi = { lib, ... }: {
           imports = [ inputs.nix-common.wrapperModules.pi-next ];
@@ -59,6 +66,7 @@
             "dev"
             "ai"
             "skills"
+            "consumer-tmux"
             "consumer-pi"
           ];
           modules = [
@@ -76,6 +84,12 @@
           let
             c = config.flake.nixosConfigurations.fixture.config;
             h = c.home-manager.users.consumer;
+            commonTmux = config.flake.wrappers.my-tmux.wrap {
+              pkgs = config.flake.nixosConfigurations.fixture.pkgs;
+            };
+            consumerTmux = config.flake.wrappers.consumer-tmux.wrap {
+              pkgs = config.flake.nixosConfigurations.fixture.pkgs;
+            };
             copilot = lib.findFirst (p: (p.name or "") == "copilot-wrapped") null h.home.packages;
             skills = h.programs.agent-skills;
             commonSkillNames = builtins.attrNames (
@@ -93,6 +107,9 @@
           assert h.home.username == "consumer";
           assert h.home.homeDirectory == "/home/consumer";
           assert h.home.stateVersion == "24.11";
+          assert config.flake.wrappers.consumer-tmux.prefix == "C-b";
+          assert lib.any (p: p.outPath == consumerTmux.outPath) h.home.packages;
+          assert !(lib.any (p: p.outPath == commonTmux.outPath) h.home.packages);
           assert h.programs.git.settings.user.email == "consumer@example.invalid";
           assert lib.elem "consumer-skill" skills.skills.enable;
           assert lib.elem "unslop" skills.skills.enable;
@@ -157,7 +174,7 @@
                 touch "$out"
               '';
             checks.consumer-wrapper = pkgs.runCommand "consumer-wrapper" { } ''
-              ${system.config.packages.tmux}/bin/consumer-tmux -V | grep tmux
+              ${system.config.packages.consumer-tmux}/bin/consumer-tmux -V | grep tmux
               touch "$out"
             '';
             checks.consumer-pi =

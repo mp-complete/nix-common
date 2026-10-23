@@ -3,7 +3,7 @@
   # nvim (a callPackage, not a wrapper) plus the raw nixpkgs pi package.
   # The wrapped tools (tmux, yazi, worktrunk, pi-desktop, …) are
   # exposed automatically as `packages.<system>.<name>` by each feature's
-  # `flake.wrappers` entry — e.g. `nix run .#tmux`, `nix build .#pi-desktop`.
+  # `flake.wrappers` entry — e.g. `nix run .#my-tmux`, `nix build .#pi-desktop`.
   perSystem =
     { system, ... }:
     let

@@ -61,12 +61,16 @@ Importing a bucket opts into its feature. `mkHost` pulls both its NixOS and Home
 Each file under a consumer's `modules/` is a flake-parts module. It can merge any existing bucket:
 
 ```nix
-{
-  flake.modules.homeManager.dev = { pkgs, ... }: {
-    home.packages = [ pkgs.hello ];
-  };
-  flake.wrappers.tmux = { lib, ... }: {
+{ config, inputs, lib, ... }: {
+  flake.wrappers.consumer-tmux = {
+    imports = [ inputs.common.wrapperModules.my-tmux ];
+    binName = "consumer-tmux";
     prefix = lib.mkForce "C-b";
+  };
+  flake.modules.homeManager.consumer-tmux = { pkgs, ... }: {
+    home.packages = [
+      (config.flake.wrappers.consumer-tmux.wrap { inherit pkgs; })
+    ];
   };
 }
 ```
@@ -158,7 +162,7 @@ Private repository visibility is not a Nix-store secrecy boundary. Never put cre
 The producer uses the same reusable module with neutral example identity solely to expose packages/checks. Consume `flakeModules.default`, not producer-evaluated identity-bearing buckets.
 
 ```sh
-nix build .#tmux --no-link
+nix build .#my-tmux --no-link
 nix build .#pi-desktop --no-link
 nix build .#checks.x86_64-linux.pi-next --no-link
 nix build .#nvim --no-link
