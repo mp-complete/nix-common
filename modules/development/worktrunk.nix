@@ -57,14 +57,17 @@
       # bare `wt` subcommands that survive alongside the fuzzy paths
       # (`tvw` / tmux `prefix C-w`), which handle picking rather than typing.
       programs.fish.shellAbbrs = {
-        wt-sesh = "wt switch --no-cd -x 'sesh connect {{ worktree_path }}' $(git branch | fzf | cut -c 3-)";
+        wt-sesh = "wt switch --no-cd -x sesh $(git branch | fzf | cut -c 3-) -- connect '{{ worktree_path }}'";
         # Keep the branch before `--`; `sh -c` resolves the configured agent
         # while using worktrunk's forward-compatible single-program form.
         wta = {
           expansion = "wt switch --create --base=@ --execute sh % -- -c 'exec \"$AGENT\"'";
           setCursor = "%";
         };
-        wtc = "wt switch --no-cd -x 'sesh connect {{ worktree_path }}' -c";
+        wtc = {
+          expansion = "wt switch --no-cd -x sesh -c % -- connect '{{ worktree_path }}'";
+          setCursor = "%";
+        };
         wtl = "wt list";
         wts = "wt switch";
       };
