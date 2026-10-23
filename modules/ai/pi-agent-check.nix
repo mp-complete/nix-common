@@ -28,14 +28,16 @@
           (
             { lib, ... }:
             {
-              # perSystem `pkgs` already carries the overlays that hosts get
-              # via the `base` bucket (modules/flake/package-set.nix).
+              # Use the same package set as the surrounding per-system checks.
               nixpkgs.pkgs = pkgs;
               # Skips bootloader/fileSystems requirements; we never build the
               # toplevel, only the units.
               boot.isContainer = true;
               system.stateVersion = "25.05";
               sops.age.keyFile = "/etc/nixos/keys.txt";
+
+              # The daemon does not select a pi wrapper; callers provide it.
+              piAgent.package = pkgs.writeShellScriptBin "pi" "exit 0";
 
               # Exercise a repository-backed job without consumer secrets.
               piAgent.jobs.common-docs = {
