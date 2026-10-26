@@ -12,7 +12,6 @@
       enable = true;
       enableBashIntegration = true;
       enableFishIntegration = true;
-      enableNushellIntegration = true;
 
       # Route history writes through a long-lived daemon instead of having every
       # shell hook open the SQLite store directly. That kills the per-command
