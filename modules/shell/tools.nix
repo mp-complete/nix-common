@@ -22,7 +22,6 @@
         enable = true;
         enableBashIntegration = true;
         enableFishIntegration = true;
-        enableNushellIntegration = true;
       };
       programs.eza = {
         enable = true;
@@ -33,7 +32,6 @@
       programs.direnv = {
         enable = true;
         enableBashIntegration = true;
-        enableNushellIntegration = true;
         nix-direnv.enable = true;
         stdlib = ''
           # Load an explicitly named development shell from this machine's
