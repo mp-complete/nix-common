@@ -5,7 +5,7 @@ let
   flakeCfg = config;
 in
 {
-  flake.wrappers.tmux =
+  flake.wrappers.my-tmux =
     {
       pkgs,
       wlib,
@@ -276,13 +276,4 @@ in
       '';
     };
 
-  # Install the wrapped tmux into the core shell so it lands on PATH (same place
-  # as yazi). Without this the `flake.wrappers.tmux` above is only a registry
-  # entry (`nix run .#tmux`) and never enters any host's environment. Uses the
-  # outer flake-parts `config`, mirroring how worktrunk installs its wrapper.
-  flake.modules.homeManager.base =
-    { pkgs, ... }:
-    {
-      home.packages = [ (config.flake.wrappers.tmux.wrap { inherit pkgs; }) ];
-    };
 }
