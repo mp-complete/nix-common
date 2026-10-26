@@ -8,7 +8,7 @@ root = Path(__file__).resolve().parent.parent
 assert not (root / "modules/wsl").exists(), "WSL modules bundled"
 assert not (root / "pkgs/clp").exists(), "WSL clipboard package bundled"
 assert "nixos-wsl" not in (root / "flake.nix").read_text(), "WSL input declared"
-assert "pi-wsl" not in (root / "modules/ai/pi.nix").read_text(), "WSL Pi wrapper declared"
+assert not (root / "modules/ai/pi.nix").exists(), "legacy Pi wrapper bundled"
 
 # These skills are consumer-owned. Do not reintroduce bundled copies or a
 # dependency on the private collection merely to validate this boundary.

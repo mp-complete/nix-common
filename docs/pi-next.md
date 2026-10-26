@@ -2,23 +2,19 @@
 
 ## Baseline
 
-`modules/pi-next/pi.nix` exposes a **wrapper utility**, not an installation
-feature. Use `wrappers.pi-next` (`.wrap` / `.apply`) or the unevaluated
-`wrapperModules.pi-next` to derive a consumer-owned wrapper, then install that
-result explicitly. Common supplies no `pi-next` Home Manager/NixOS bucket,
-standalone `packages.<system>.pi-next`, or public Pi-next overlay. It does not
-add Pi-specific sources to the global `skills` bucket. The base does not depend
-on `pi.enable` or desktop configuration.
+`modules/pi-next/pi.nix` exposes **wrapper utilities**, not an installation
+feature. `wrappers.pi-next` and `wrappers.pi-coding-agent` are identical; their
+corresponding unevaluated `wrapperModules` can also derive a consumer-owned
+wrapper. Install the result explicitly. Common supplies no Pi Home Manager/NixOS
+bucket, standalone package, or public Pi-next overlay. It does not add
+Pi-specific sources to the global `skills` bucket.
 
-The wrapper imports `pi-nix-wrapper.wrapperModules.pi` and explicitly chooses
-its pinned pi-nix Node runtime (currently Pi 1.0.0). It does not change the
-Numtide runtime or configuration used by the existing `pi` wrappers.
+The wrappers import `pi-nix-wrapper.wrapperModules.pi` and explicitly choose
+its pinned pi-nix Node runtime (currently Pi 1.0.0).
 
 Only the upstream runtime's `bin` directory is exposed to the wrapper. Its
 launcher uses absolute Nix-store paths for the runtime and libraries, so they
-remain available without exporting a second `lib/node_modules` tree. This lets
-legacy `pi` and `pi-next` coexist in Home Manager without file collisions or
-relaxing collision checks.
+remain available without exporting a `lib/node_modules` tree.
 
 The wrapper keeps upstream runtime defaults and adds declared resources:
 
@@ -334,8 +330,9 @@ None blocks this minimal integration; these matter when building it out later.
 
 ## Validation
 
-`checks.x86_64-linux.pi-next-api` asserts that only the wrapper/module APIs are
-exported for Pi-next: no base package, installation buckets or public overlay.
+`checks.x86_64-linux.pi-next-api` asserts that the `pi-next` and
+`pi-coding-agent` wrapper/module APIs are identical and export no base package,
+installation buckets, or public overlay.
 The independent consumer also checks that global skills have no Pi-specific
 source or selection.
 

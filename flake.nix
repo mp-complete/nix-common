@@ -39,9 +39,7 @@
     pi-nix-wrapper = {
       url = "github:mp-complete/pi-nix-wrapper";
       inputs.nix-wrapper-modules.follows = "nix-wrapper-modules";
-      # Keep Pi's upstream-tested runtime/package set independent of legacy Pi.
     };
-    llm-agents.url = "github:numtide/llm-agents.nix";
     worktrunk-flake = {
       url = "github:max-sixty/worktrunk";
       inputs.nixpkgs.follows = "nixpkgs";

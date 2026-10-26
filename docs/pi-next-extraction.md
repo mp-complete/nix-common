@@ -76,7 +76,7 @@ Validated on x86_64-linux after narrowing the public API to the wrapper utility:
 - All four baseline `pi-next*` checks and the new `pi-next-api` check passed.
 - `bash tests/validate.sh --build` passed: source boundaries, independent consumer
   contract, flake evaluation, existing local extension tests, consumer wrapper
-  builds, and the legacy Pi-agent/Edge bootstrap build checks.
+  builds, and the Pi-agent/Edge bootstrap build checks.
 - The customized consumer loaded its own skill and prompt, used its renamed XDG
   profile, registered no MCP servers, and retained the common skill and
   extensions, including Plannotator.

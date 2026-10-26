@@ -32,7 +32,7 @@ now=$(date +%s)
 #
 #   default            $HOME/.pi/agent        (pi appends `agent/` itself)
 #   wrapper configDir  $HOME/.config/pi-work  (the wrapper sets the dir as-is,
-#                                              see modules/ai/pi.nix)
+#                                              see modules/pi-next/pi.nix)
 #
 # So the glob must not have a trailing `/agent`; requiring `sessions/` or
 # `live/` keeps unrelated `~/.config/pi-*` dirs out.

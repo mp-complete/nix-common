@@ -79,8 +79,9 @@ Wrappers remain explicit: `config.flake.wrappers.<name>.wrap { inherit pkgs; }`.
 
 **`pi-next` is a wrapper utility only.** It carries pinned npm resources, the
 official completion notifier, Exa MCP, and the upstream `mk-pi-extension` skill.
-Common exposes `wrappers.pi-next` and `wrapperModules.pi-next`, but no Pi-next
-installation bucket, standalone package, public overlay or global skill source.
+Common exposes identical `wrappers.pi-next` and `wrappers.pi-coding-agent`
+utilities (and corresponding `wrapperModules`), but no Pi-next installation
+bucket, standalone package, public overlay or global skill source.
 Each consumer derives its own wrapper and explicitly installs it:
 
 ```nix
@@ -98,7 +99,7 @@ Each consumer derives its own wrapper and explicitly installs it:
 Select the consumer's `"work-pi"` bucket, or use
 `inputs.common.wrappers.pi-next.wrap { inherit pkgs; ... }` directly in a
 consumer-owned package list. Renaming `binName` also changes its default XDG
-profile directory. Legacy `pi` remains separate. See [pi-next integration](docs/pi-next.md)
+profile directory. See [pi-next integration](docs/pi-next.md)
 for migration, pins and validation, and [the extraction scope](docs/pi-next-extraction.md)
 for ownership boundaries.
 
