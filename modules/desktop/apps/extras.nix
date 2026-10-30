@@ -6,7 +6,6 @@
       home.packages = with pkgs; [
         thunderbird
         vlc
-        calibre
         kvirc
         evtest
       ];
