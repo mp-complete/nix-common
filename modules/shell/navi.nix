@@ -110,10 +110,10 @@
             # navi parses these through crossterm, which accepts *only* the
             # 16 ANSI colour names (plus `reset`) -- hex, `rgb_(r,g,b)` and
             # raw ANSI indices are all rejected at config load, and navi then
-            # silently falls back to its defaults. That is fine here: kitty
-            # remaps ANSI 0-15 to Catppuccin Macchiato
-            # (desktop/apps/kitty.nix), so naming a colour picks up the same
-            # palette as tv, yazi and fish.
+            # silently falls back to its defaults. That is fine here: the
+            # consumer-owned kitty theme remaps ANSI 0-15 to Catppuccin
+            # Macchiato, so naming a colour picks up the same palette as tv,
+            # yazi and fish.
             #
             # The mapping mirrors fish's own syntax highlighting
             # (shell/fish.nix): the snippet column is a command, so it gets

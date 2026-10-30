@@ -8,9 +8,8 @@
     }:
     let
       # Catppuccin Macchiato, taken verbatim from the [dark] section of
-      # catppuccin/fish's themes/catppuccin-macchiato.theme. Matches kitty
-      # (desktop/apps/kitty.nix), yazi (shell/yazi.nix), rofi
-      # (desktop/apps/rofi.nix) and tv (shell/television.nix), which were
+      # catppuccin/fish's themes/catppuccin-macchiato.theme. Matches yazi and
+      # tv here, plus the consumer-owned kitty and rofi themes, which were
       # already themed while fish alone kept its stock colours.
       #
       # Applied with `set -g` from config.fish rather than `fish_config theme

@@ -2,7 +2,7 @@
 {
   # nvim is a callPackage rather than a wrapper. Wrapped tools are
   # exposed automatically as `packages.<system>.<name>` by each feature's
-  # `flake.wrappers` entry — e.g. `nix run .#my-tmux`, `nix build .#pi-desktop`.
+  # `flake.wrappers` entry — e.g. `nix run .#my-tmux`, `nix build .#television`.
   perSystem =
     { system, ... }:
     let

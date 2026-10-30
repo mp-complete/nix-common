@@ -152,9 +152,9 @@ Common contains **no encrypted credentials, recipient metadata, private endpoint
 - Generic Atuin configuration remains shared; its encrypted sync key/binding is consumer-owned.
 - WSL integration, including its GPG bootstrap/key delivery, remains downstream.
 - Personal mounts, WireGuard declarations, SSH exposure and Forgejo runner provisioning remain consumer-owned.
-- Niri's wrapper, NixOS/Home Manager buckets, flake input and binary cache are owned by `nix-personal`. Consumers selecting the `niri` bucket must provide it downstream; common retains the reusable `desktop-wayland` layer and desktop tools.
-- The Zen browser module, flake input and binary cache are owned by `nix-personal`.
-- Noctalia's Home Manager bucket, TOML configuration, flake input and binary cache are owned by `nix-personal`. Consumers using the `noctalia` bucket must provide it downstream; common retains reusable wallpaper assets and their `desktop-core` installation.
+- The complete graphical desktop stack is consumer-owned. `nix-personal` provides its desktop foundations, display managers, WMs, GUI wrappers, browsers, applications, wallpapers, desktop hardware, gaming, Wine, virtualization, QMK, and Proton Mail integration.
+- Niri, Zen, and Noctalia—including their flake inputs, caches, modules, and host-specific configuration—are owned by `nix-personal`.
+- `nix-common` intentionally retains no `desktop-*`, WM, browser, or personal graphical-application buckets; work consumers can remain CLI-focused WSL configurations.
 
 Private repository visibility is not a Nix-store secrecy boundary. Never put credentials into derivations; choose builders/caches appropriate for private source.
 
@@ -164,7 +164,7 @@ The producer uses the same reusable module with neutral example identity solely 
 
 ```sh
 nix build .#my-tmux --no-link
-nix build .#pi-desktop --no-link
+nix build .#television --no-link
 nix build .#checks.x86_64-linux.pi-next --no-link
 nix build .#nvim --no-link
 bash tests/validate.sh --build
@@ -176,6 +176,6 @@ The example's relative input is overridden explicitly in the test script for com
 
 ## Compatibility and provenance
 
-This extraction intentionally does not upgrade dependencies, rewrite the architecture, or fix unrelated host choices. Unknown bucket names retain the original class-filtering behavior; consumers should review their lists. The original Laplace `sway` mismatch is documented in the personal consumer rather than silently changing its desktop.
+This extraction intentionally does not upgrade dependencies or fix unrelated host choices. Unknown bucket names retain the original class-filtering behavior; consumers should review their lists. Host-level desktop migrations, including Laplace's historical `sway` mismatch, are documented and handled by the personal consumer.
 
 See [EXTRACTION-NOTES.md](EXTRACTION-NOTES.md) for boundaries. No new license is asserted for copied source or bundled third-party assets; retained notices continue to apply. Public visibility is not a blanket relicensing grant.

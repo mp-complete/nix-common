@@ -144,9 +144,9 @@ in
         exec sesh connect -c "$prog" "$entry"
       '';
 
-      # Catppuccin Macchiato -- matches kitty (desktop/apps/kitty.nix), yazi
-      # (shell/yazi.nix) and rofi (desktop/apps/rofi.nix). tv ships a builtin
-      # `catppuccin` theme but it is the Mocha variant.
+      # Catppuccin Macchiato -- matches yazi here and the consumer-owned kitty
+      # and rofi themes. tv ships a builtin `catppuccin` theme, but it is the
+      # Mocha variant.
       macchiato = {
         base = "#24273a";
         text = "#cad3f5";
@@ -331,10 +331,9 @@ in
       # collapses to a one-line `genAttrs`.
       channels = lib.genAttrs upstreamChannels (name: "${cable}/${name}.toml") // {
         # This flake's checkout. `$NH_FLAKE` is exported globally by
-        # `programs.nh` (system/nix-tools.nix), so the channel resolves the
-        # right tree per host -- `~/.config/nixdots` on hilbert/general2 but
-        # `~/.config/nixos` on the `nixos` host -- without this flake-level
-        # wrapper needing an `osConfig`. Deliberately written without
+        # `programs.nh` (system/nix-tools.nix), so the channel resolves each
+        # consumer's configured tree without this flake-level wrapper needing
+        # an `osConfig`. Deliberately written without
         # `${VAR:-default}`: tv runs source commands under `$SHELL`
         # (`Shell::from_env()`), and that syntax is not valid in fish.
         nixdots = {
