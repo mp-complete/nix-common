@@ -14,11 +14,11 @@ let
     }:
     {
       imports = [ upstream.wrapperModules.pi ];
-      # Export only the upstream launcher's bin tree. The launcher refers to its
+      # Export only the nixpkgs launcher's bin tree. The launcher refers to its
       # runtime and libraries by absolute store paths.
       package = pkgs.buildEnv {
         name = "pi-next-runtime";
-        paths = [ upstream.inputs.pi-nix.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent ];
+        paths = [ pkgs.pi-coding-agent ];
         pathsToLink = [ "/bin" ];
         meta.mainProgram = "pi";
       };
@@ -40,6 +40,8 @@ in
   # choose how to install the result. Other wrappers keep their existing exports.
   perSystem = { config, ... }: {
     # In exclude mode true omits it; in build mode false leaves it unselected.
-    wrappers.packages = lib.genAttrs wrappers (_: lib.mkDefault (config.wrappers.control_type == "exclude"));
+    wrappers.packages = lib.genAttrs wrappers (
+      _: lib.mkDefault (config.wrappers.control_type == "exclude")
+    );
   };
 }
