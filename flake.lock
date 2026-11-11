@@ -189,11 +189,11 @@
         "qmd": "qmd"
       },
       "locked": {
-        "lastModified": 1794170601,
-        "narHash": "sha256-zdpaSMWg4CU1pemwwkyoq1Q0YXsTJkGQNZw6Ld7uhls=",
+        "lastModified": 1794343178,
+        "narHash": "sha256-w2QNvMMwuYaWYXLNUIR179iLYj5jigwxx10i2GH64sU=",
         "owner": "openclaw",
         "repo": "nix-openclaw",
-        "rev": "52d5d7e4c54ae761f26fb40abb9778046cec6591",
+        "rev": "b04843a59efe524bc01a14aed1d5b977dc811334",
         "type": "github"
       },
       "original": {
@@ -512,11 +512,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1794306266,
-        "narHash": "sha256-6PmgT8iIrL17aiV+EbKitRAOaeRskxHNVSTKc7MSw2c=",
+        "lastModified": 1794381203,
+        "narHash": "sha256-2L2nG3FuvbpyNZHdlYzMZlYBwLDejRUBNBHJJAQ3y4o=",
         "owner": "max-sixty",
         "repo": "worktrunk",
-        "rev": "88c111d66804fac398c063b228568a56c8854702",
+        "rev": "a6cbc2947852261ac22540c4016901bd2f885847",
         "type": "github"
       },
       "original": {
