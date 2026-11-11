@@ -161,8 +161,7 @@ The current package pins are:
 | --- | --- | --- |
 | `pi-powerline-footer` | 0.19.1 | Powerline footer extension |
 | `pi-btw` | 0.7.1 | Side-conversation extension and `btw` skill |
-| `awesome-pi-themes` | 1.2.19 | Theme collection and `look-pack` extension |
-| `pi-subagents` | 0.76.1 | Delegation extension, two skills, and six workflow prompts |
+| `pi-subagents` | 0.88.0 | Delegation extension, two skills, and six workflow prompts |
 | `pi-interactive-shell` | 0.17.0 | PTY shell tool, spawn/attach/dismiss commands, and `pi-interactive-shell` skill |
 | `@juicesharp/rpiv-ask-user-question` | 2.12.0 | Structured `ask_user_question` tool |
 | `@juicesharp/rpiv-todo` | 2.12.0 | `todo` tool, `/todos` command and task widget above the editor |
@@ -175,14 +174,45 @@ Pi's loader; the smoke build reproduces that failure and passes with complete
 roots. Keep `mkPiExtension` for self-contained entrypoints that do not depend on
 sibling paths.
 
+No third-party theme collection is bundled. Pi's built-in `system` theme
+follows the terminal palette; `dark` and `light` remain available through
+`/settings`. The Powerline footer is independent and remains installed.
+`awesome-pi-themes` and its optional `look-pack` extension were removed rather
+than carrying a compatibility patch for unsupported `codex-slate` color tokens.
+Existing saved custom-theme selections are not rewritten; users of a removed
+theme should select a built-in theme through `/settings`.
+
 `pi-subagents` keeps its compiled source, built-in agent definitions, skills,
 workflow prompts, and docs together. Its runtime dependency closure is pinned
 without installer/lifecycle execution: `acorn` 8.18.0, `jiti` 2.7.0, `undici`
-8.10.2, `yaml` 2.8.3, and `@js-temporal/polyfill` 0.5.1 with `jsbi` 4.3.2.
+8.12.4, `yaml` 2.8.3, and `@js-temporal/polyfill` 0.5.1 with `jsbi` 4.3.2.
 Pi-provided peers are not installed privately. These pins meet the declared
 runtime ranges, including undici's Node >=22.19.0 requirement with the wrapper's
 Node 24 runtime. The smoke build checks tool/command/skill/prompt registration,
 not actual delegation, background runners, worktrees, or interactive UI.
+
+Version 0.88.0 requires Pi >=1.2 and loads its published `bundle/index.js`
+entrypoint from the complete package root. It also checks for Pi 1.5's declared
+`pi-schema` dependency before accepting a background launch; it does not supply
+missing host dependencies itself.
+
+It retains the 0.78.0 fix for the async launcher's host-peer check on Pi 1.2 and newer,
+which no longer depend on `@earendil-works/chord`. Version 0.76.1 incorrectly
+required both Chord exports on those hosts and rejected background children
+before startup. The fixed launcher requires Chord only when the host declares
+it; do not install a private obsolete Chord copy to bypass the check. This is
+separate from an incomplete host SDK closure (such as a missing `pi-schema`),
+which still requires a runtime packaging fix.
+
+Offline validation against the work deployment's Pi 1.5.2 package reproduced
+the Chord preflight failure with 0.76.1 and passed with 0.88.0 (also checked
+with the initial 0.78.0 fix). With the native runner's `runner-peer-preload.mjs`,
+`JITI_ALIAS`, `PI_ASYNC_NATIVE_RUNNER=1`, and host-root environment, all required
+peer imports, the full `subagent-runner.js` import graph, and the published
+`bundle/index.js` entrypoint loaded in a disposable HOME using Node 24.
+The work wrapper also built against the local common checkout. No child
+session or model was started; this does not establish end-to-end async
+execution, provider access, or result delivery.
 
 `pi-interactive-shell` retains its TypeScript sources and skill in one package
 root. Its pinned runtime closure is `re2js` 2.8.6, `@typesafe-ai/sdk` 0.6.0,
@@ -312,7 +342,7 @@ None blocks this minimal integration; these matter when building it out later.
    `pi-next mcp list/login`; manage those servers through `/mcp` in a session.
    Store no literal secrets in Nix; use runtime interpolation or OAuth.
 4. **Resources do not automatically propagate into third-party subagents.**
-   `pi-subagents` 0.76.1 uses in-process SDK sessions for foreground children
+   `pi-subagents` 0.88.0 uses in-process SDK sessions for foreground children
    and a detached Node runner for npm-backed background children. Parent wrapper
    flags are not a child resource configuration; select child extensions and
    skills explicitly when needed. Leave `PI_SUBAGENT_PI_BINARY` unset for the

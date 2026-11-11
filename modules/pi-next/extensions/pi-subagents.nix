@@ -29,8 +29,8 @@
       };
       undici = npmSource {
         npmPackage = "undici";
-        version = "8.10.2";
-        hash = "sha512-/y4/bH9YNU5hi9NIrpOuvGXFcxrj3CMrV+/AYpowAYTpHn8gX/XPFjNy766FPoYY0miQhdW977JFWKGNhBdwyQ==";
+        version = "8.12.4";
+        hash = "sha512-8Mx+uNKKER2bA4AdtedkqRbwUCIJFr2nJckXRe5yrDqzePqwLP7VNcctN8/XdmDSbF7mS+jJKIszlL+vbam1VA==";
       };
       yaml = npmSource {
         npmPackage = "yaml";
@@ -40,8 +40,9 @@
     in
     npmSource {
       npmPackage = "pi-subagents";
-      version = "0.76.1";
-      hash = "sha512-DTHVUUyLx5KfwikpSQF4sWIKaazbxanAoKd8v4ZGt9OqLM2xNQ79BrPHjaqOARipoUb0kZIKyEYwTPItPqYq1g==";
+      # Requires Pi >=1.2; retains the Chord fix and preflights pi-schema.
+      version = "0.88.0";
+      hash = "sha512-Hc7GT36HTU1IsT/MPQbxnqmA90G1tfWJMFrxZ6ISURadGaIx7uad/qzkwL4epgBYRUMB7KOB9r+8k8YhXKP1lw==";
       nodeModules = {
         inherit
           acorn
